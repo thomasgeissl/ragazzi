@@ -1,24 +1,19 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import { Connector } from "mqtt-react-hooks";
+import Status from "./components/Status";
+import Publisher from "./components/Publisher";
+import Subscriber from "./components/Subscriber";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Connector brokerUrl="ws://localhost:9001">
+        <Status></Status>
+        {/* <Publisher></Publisher>
+        <Subscriber></Subscriber> */}
+      </Connector>
     </div>
   );
 }
