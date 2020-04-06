@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
+const fs = require("fs");
 
 const aedes = require("aedes")();
 const httpServer = require("http").createServer();
@@ -56,16 +57,32 @@ function createWindow() {
             });
             result.then(res => {
               if (!res.canceled) {
-                let win = new BrowserWindow({
-                  webPreferences: {
-                    webSecurity: false
-                  }
-                });
-                win.loadURL("file://" + res.filePaths[0]);
-                // win.loadURL(
-                //   "file:///Users/thomas.geissl/projects/grantlerrecords/website/public/index.html"
-                // );
-                // win.loadURL("https://sz.de");
+                const ext = res.filePaths[0].split(".").slice(-1)[0];
+                if (ext === "html") {
+                  let win = new BrowserWindow({
+                    webPreferences: {
+                      webSecurity: false
+                    }
+                  });
+                  win.loadURL("file://" + res.filePaths[0]);
+                } else if (ext === "json") {
+                  fs.readFile(res.filePaths[0], "utf8", (err, data) => {
+                    if (err) throw err;
+                    const obj = JSON.parse(data);
+                    obj.forEach(view => {
+                      let win = new BrowserWindow({
+                        ...view,
+                        webPreferences: {
+                          webSecurity: false
+                        }
+                      });
+                      win.loadURL(
+                        "file://" +
+                          path.join(path.dirname(res.filePaths[0]), view.path)
+                      );
+                    });
+                  });
+                }
               }
             });
           }
