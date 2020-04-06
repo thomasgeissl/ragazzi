@@ -8,6 +8,7 @@ const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
 const isDev = require("electron-is-dev");
 
 const aedes = require("aedes")();
+const stats = require("aedes-stats");
 const port = 9001;
 
 const tcpServer = require("net").createServer(aedes.handle);
@@ -16,6 +17,9 @@ const tcpPort = 1883;
 
 const isMac = process.platform === "darwin";
 const interfaces = os.networkInterfaces();
+
+stats(aedes);
+
 let ipAddresses = [];
 for (var k in interfaces) {
   for (var k2 in interfaces[k]) {

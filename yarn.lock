@@ -1957,6 +1957,11 @@ aedes-persistence@^7.1.1:
     from2 "^2.3.0"
     qlobber "^3.1.0"
 
+aedes-stats@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/aedes-stats/-/aedes-stats-3.0.0.tgz#b856aac8ac445c65cb4d430b38f9c7b9bf09cfd0"
+  integrity sha512-96pw93CHDZKpf5cKNNAQcmFoipbaz9WGbmJ6mt3GAkKDj40071d9WwjHFUg2WljjLJajuX04BPhj6FL5Kixp/A==
+
 aedes@^0.40.1:
   version "0.40.1"
   resolved "https://registry.yarnpkg.com/aedes/-/aedes-0.40.1.tgz#0a8a0a03bcabe5078eb0d5b11c335bdc2c30e9dc"

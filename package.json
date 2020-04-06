@@ -10,6 +10,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "aedes": "^0.40.1",
+    "aedes-stats": "^3.0.0",
     "electron-is-dev": "^1.1.0",
     "mqtt": "^3.0.0",
     "mqtt-react-hooks": "^1.2.0",
