@@ -1,20 +1,46 @@
-import React from "react";
-import { useSubscription } from "mqtt-react-hooks";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+import client from "../mqtt";
 
 export default () => {
-  const { msgs } = useSubscription("topic");
-  console.log(msgs);
+  const [topic, setTopic] = useState("");
+  const messages = useSelector(state => state.mqtt.receivedMessages);
   return (
     <>
       <h1>subscriber</h1>
-
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {msgs.map(message => (
-          <span key={message.id}>
-            {`topic:${message.topic} - message: ${message.message}`}
-          </span>
-        ))}
-      </div>
+      <form>
+        <TextField
+          fullWidth
+          label="topic"
+          value={topic}
+          onChange={event => setTopic(event.target.value)}
+        />
+        <Button
+          primary
+          fullWidth
+          type="button"
+          onClick={() => {
+            client.subscribe(topic);
+            setTopic("");
+          }}
+        >
+          subscribe
+        </Button>
+      </form>
+      <ul>
+        {messages.map((message, index) => {
+          return (
+            <li key={index}>
+              {message.topic}
+              <br></br>
+              {message.message}
+            </li>
+          );
+        })}
+      </ul>
     </>
   );
 };
