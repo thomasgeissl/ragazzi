@@ -1,16 +1,35 @@
-const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
-const path = require("path");
-const isDev = require("electron-is-dev");
+const os = require("os");
 const fs = require("fs");
+const path = require("path");
+const http = require("http");
+const url = require("url");
+
+const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
+const isDev = require("electron-is-dev");
 
 const aedes = require("aedes")();
-const httpServer = require("http").createServer();
 const port = 9001;
 
 const tcpServer = require("net").createServer(aedes.handle);
+const httpServer = http.createServer();
 const tcpPort = 1883;
 
 const isMac = process.platform === "darwin";
+const interfaces = os.networkInterfaces();
+let ipAddresses = [];
+for (var k in interfaces) {
+  for (var k2 in interfaces[k]) {
+    var address = interfaces[k][k2];
+    if (address.family === "IPv4" && !address.internal) {
+      ipAddresses.push(address.address);
+    }
+  }
+}
+
+const parameterAppendix =
+  ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
+
+let mainWindow;
 
 tcpServer.listen(tcpPort, function() {
   console.log("server started and listening on port ", tcpPort);
@@ -57,16 +76,53 @@ function createWindow() {
             });
             result.then(res => {
               if (!res.canceled) {
-                const ext = res.filePaths[0].split(".").slice(-1)[0];
+                const file = res.filePaths[0];
+                const ext = file.split(".").slice(-1)[0];
+                const dir = path.dirname(file);
+                const fileRelative = path.relative(dir, file);
                 if (ext === "html") {
+                  http
+                    .createServer(function(req, res) {
+                      fs.readFile(
+                        path.join(dir, url.parse(req.url, true).pathname),
+                        function(err, data) {
+                          if (err) {
+                            res.writeHead(404);
+                            res.end(JSON.stringify(err));
+                            return;
+                          }
+                          res.writeHead(200);
+                          res.end(data);
+                        }
+                      );
+                    })
+                    .listen(8080);
                   let win = new BrowserWindow({
                     webPreferences: {
                       webSecurity: false
                     }
                   });
-                  win.loadURL("file://" + res.filePaths[0]);
+                  win.loadURL(
+                    "http://localhost:8080/" + fileRelative + parameterAppendix
+                  );
                 } else if (ext === "json") {
-                  fs.readFile(res.filePaths[0], "utf8", (err, data) => {
+                  http
+                    .createServer(function(req, res) {
+                      fs.readFile(
+                        path.join(dir, url.parse(req.url, true).pathname),
+                        function(err, data) {
+                          if (err) {
+                            res.writeHead(404);
+                            res.end(JSON.stringify(err));
+                            return;
+                          }
+                          res.writeHead(200);
+                          res.end(data);
+                        }
+                      );
+                    })
+                    .listen(8080);
+                  fs.readFile(file, "utf8", (err, data) => {
                     if (err) throw err;
                     const obj = JSON.parse(data);
                     obj.forEach(view => {
@@ -76,12 +132,11 @@ function createWindow() {
                           webSecurity: false
                         }
                       });
-                      win.loadURL(
-                        "file://" +
-                          path.join(path.dirname(res.filePaths[0]), view.path)
-                      );
+                      // win.loadURL("file://" + path.join(dir, view.path));
+                      win.loadURL("http://localhost:8080/" + view.path);
                     });
                   });
+                  // dialog.showMessageBox(mainWindow, { message: "test" });
                 }
               }
             });
@@ -162,7 +217,7 @@ function createWindow() {
   Menu.setApplicationMenu(menu);
 
   // Create the browser window.
-  let win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 640,
     height: 480,
     webPreferences: {
@@ -171,7 +226,7 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  win.loadURL(
+  mainWindow.loadURL(
     isDev
       ? "http://localhost:3000"
       : `file://${path.join(__dirname, "../build/index.html")}`
