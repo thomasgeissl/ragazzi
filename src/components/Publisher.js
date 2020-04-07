@@ -37,7 +37,8 @@ export default () => {
           onChange={event => setMessage(event.target.value)}
         />
         <Button
-          primary
+          variant="contained"
+          color="primary"
           fullWidth
           type="button"
           onClick={() => handleClick(topic, message)}

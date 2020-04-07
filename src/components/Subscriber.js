@@ -70,7 +70,8 @@ export default () => {
           onChange={event => setTopic(event.target.value)}
         />
         <Button
-          primary
+          variant="contained"
+          color="primary"
           fullWidth
           type="button"
           onClick={() => {

@@ -7,6 +7,16 @@ import Home from "./components/Home";
 import Dev from "./components/Dev";
 
 import store from "./store";
+import mqtt from "mqtt";
+const client = mqtt.connect("ws://localhost:9001");
+
+client.subscribe("ragazzi");
+client.on("message", (topic, message) => {
+  if (topic === "ragazzi") {
+    const action = JSON.parse(message.toString());
+    store.dispatch(action);
+  }
+});
 
 const Container = styled.div`
   padding-left: 20px;

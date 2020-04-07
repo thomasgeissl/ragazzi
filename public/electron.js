@@ -3,20 +3,25 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const url = require("url");
+const mqtt = require("mqtt");
 
 const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
 const isDev = require("electron-is-dev");
 
 const aedes = require("aedes")();
 const stats = require("aedes-stats");
-const port = 9001;
 
 const tcpServer = require("net").createServer(aedes.handle);
 const httpServer = http.createServer();
+
+const wsPort = 9001;
 const tcpPort = 1883;
+const httpPort = 8080;
 
 const isMac = process.platform === "darwin";
 const interfaces = os.networkInterfaces();
+
+let mqttClient;
 
 stats(aedes);
 
@@ -34,16 +39,34 @@ const parameterAppendix =
   ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
 
 let mainWindow;
+let config = {};
+
+const publishConfig = () => {
+  const action = {
+    type: "SETCONFIG",
+    payload: {
+      value: { ...config, ip: ipAddresses[0], httpPort }
+    }
+  };
+  mqttClient.publish("ragazzi", JSON.stringify(action));
+};
 
 tcpServer.listen(tcpPort, function() {
   console.log("server started and listening on port ", tcpPort);
+  mqttClient = mqtt.connect("mqtt://localhost:" + tcpPort);
+  mqttClient.on("message", function(topic, message) {
+    if (topic === "getConfig") {
+      publishConfig();
+    }
+  });
+  mqttClient.subscribe("getConfig");
 });
 
 const ws = require("websocket-stream");
 ws.createServer({ server: httpServer }, aedes.handle);
 
-httpServer.listen(port, function() {
-  console.log("websocket server listening on port ", port);
+httpServer.listen(wsPort, function() {
+  console.log("websocket server listening on port ", wsPort);
 });
 
 function createWindow() {
@@ -107,28 +130,50 @@ function createWindow() {
                     }
                   });
                   win.loadURL(
-                    "http://localhost:8080/" + fileRelative + parameterAppendix
+                    `http://localhost:${httpPort}/${fileRelative}${parameterAppendix}`
                   );
                 } else if (ext === "json") {
                   http
                     .createServer(function(req, res) {
-                      fs.readFile(
-                        path.join(dir, url.parse(req.url, true).pathname),
-                        function(err, data) {
-                          if (err) {
-                            res.writeHead(404);
-                            res.end(JSON.stringify(err));
-                            return;
+                      const pathName = url.parse(req.url, true).pathname;
+                      if (pathName === "/") {
+                        // ? "http://localhost:3000"
+                        // : `file://${path.join(__dirname, "../build/index.html")}`
+                        // );
+                        fs.readFile(
+                          path.join(__dirname, "../build/index.html"),
+                          function(err, data) {
+                            if (err) {
+                              res.writeHead(404);
+                              res.end(JSON.stringify(err));
+                              return;
+                            }
+                            res.writeHead(200);
+                            res.end(data);
                           }
-                          res.writeHead(200);
-                          res.end(data);
-                        }
-                      );
+                        );
+                      } else {
+                        fs.readFile(
+                          path.join(dir, url.parse(req.url, true).pathname),
+                          function(err, data) {
+                            if (err) {
+                              res.writeHead(404);
+                              res.end(JSON.stringify(err));
+                              return;
+                            }
+                            res.writeHead(200);
+                            res.end(data);
+                          }
+                        );
+                      }
                     })
                     .listen(8080);
                   fs.readFile(file, "utf8", (err, data) => {
                     if (err) throw err;
                     const obj = JSON.parse(data);
+                    config = obj;
+                    publishConfig();
+
                     obj.views.forEach(view => {
                       let win = new BrowserWindow({
                         ...view,
@@ -136,11 +181,9 @@ function createWindow() {
                           webSecurity: false
                         }
                       });
-                      // win.loadURL("file://" + path.join(dir, view.path));
-                      win.loadURL("http://localhost:8080/" + view.path);
+                      win.loadURL(`http://localhost:${httpPort}/${view.path}`);
                     });
                   });
-                  // dialog.showMessageBox(mainWindow, { message: "test" });
                 }
               }
             });
