@@ -1267,6 +1267,13 @@
     react-is "^16.8.0"
     react-transition-group "^4.3.0"
 
+"@material-ui/icons@^4.9.1":
+  version "4.9.1"
+  resolved "https://registry.yarnpkg.com/@material-ui/icons/-/icons-4.9.1.tgz#fdeadf8cb3d89208945b33dbc50c7c616d0bd665"
+  integrity sha512-GBitL3oBWO0hzBhvA9KxqcowRUsA0qzwKkURyC8nppnC3fw54KPKZ+d4V1Eeg/UnDRSzDaI9nGCdel/eh9AQMg==
+  dependencies:
+    "@babel/runtime" "^7.4.4"
+
 "@material-ui/styles@^4.9.6":
   version "4.9.6"
   resolved "https://registry.yarnpkg.com/@material-ui/styles/-/styles-4.9.6.tgz#924a30bf7c9b91af9c8f19c12c8573b8a4ecd085"
@@ -7719,11 +7726,6 @@ mqemitter@^3.0.0:
     fastparallel "^2.3.0"
     qlobber "^3.1.0"
 
-mqtt-match@^1.0.2:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/mqtt-match/-/mqtt-match-1.0.3.tgz#13e65197b0556e57c53633e5c0d757722094776f"
-  integrity sha512-nfeAp+chyjVeIvvrgMhQCfDAIVp/zXX8rtxHQwuAWuapqAdFs1F0kIekG445ps3xs/qFPK6l2xRlAyiqqwbmrQ==
-
 mqtt-packet@^6.0.0, mqtt-packet@^6.3.0:
   version "6.3.2"
   resolved "https://registry.yarnpkg.com/mqtt-packet/-/mqtt-packet-6.3.2.tgz#a737734a9a64e8cffbad7ad9e116d35b912f2e00"
@@ -7734,21 +7736,6 @@ mqtt-packet@^6.0.0, mqtt-packet@^6.3.0:
     inherits "^2.0.3"
     process-nextick-args "^2.0.0"
     safe-buffer "^5.1.2"
-
-mqtt-pattern@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/mqtt-pattern/-/mqtt-pattern-1.2.0.tgz#f79a5bb1b567bcd9a69857ba743bc8bef52261d2"
-  integrity sha512-5tvJTrMXcvAWRc4J+YW0pnZOLi20yXFX1R7cjB0291X9aRFPyO+5vbh/kHVwUlNPfJuwijcvrd/AmwDLe1021w==
-  dependencies:
-    mqtt-match "^1.0.2"
-
-mqtt-react-hooks@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/mqtt-react-hooks/-/mqtt-react-hooks-1.2.0.tgz#b90adb8f9d2c39000117de5fbf9bdc3df1b5f6d0"
-  integrity sha512-Evfk1Lo2l7ALemr23mTwZRtjMVrTYMNtJPJHaCVlOSmc0sNOoB3lP80ZUn+1d7HPlcHKbvIwUPtv6TVUgfGdGA==
-  dependencies:
-    mqtt "^3.0.0"
-    mqtt-pattern "^1.2.0"
 
 mqtt@^3.0.0:
   version "3.0.0"

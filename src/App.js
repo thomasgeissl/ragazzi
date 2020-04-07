@@ -1,23 +1,27 @@
 import React from "react";
-import { Connector } from "mqtt-react-hooks";
+import { Provider } from "react-redux";
+import styled from "styled-components";
+
 import Status from "./components/Status";
 import Publisher from "./components/Publisher";
 import Subscriber from "./components/Subscriber";
 
-import { Provider } from "react-redux";
 import store from "./store";
+
+const Container = styled.div`
+  padding-left: 20px;
+  padding-right: 20px;
+`;
 
 function App() {
   return (
-    <div className="App">
+    <Container>
       <Provider store={store}>
-        <Connector brokerUrl="ws://localhost:9001">
-          <Status></Status>
-          <Publisher></Publisher>
-          <Subscriber></Subscriber>
-        </Connector>
+        <Status></Status>
+        <Publisher></Publisher>
+        <Subscriber></Subscriber>
       </Provider>
-    </div>
+    </Container>
   );
 }
 

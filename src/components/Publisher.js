@@ -6,10 +6,7 @@ import TextField from "@material-ui/core/TextField";
 
 import client from "../mqtt";
 
-const Container = styled.div`
-  padding-left: 15px;
-  padding-right: 15px;
-`;
+const Container = styled.div``;
 
 export default () => {
   const [topic, setTopic] = useState("");
@@ -19,7 +16,7 @@ export default () => {
   }
   return (
     <Container>
-      <h1>publisher</h1>
+      <h2>publisher</h2>
       <form>
         <TextField
           fullWidth

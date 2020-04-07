@@ -1,10 +1,24 @@
 const types = {
-  ADDRECEIVEDMESSAGE: "ADDRECEIVEDMESSAGE"
+  SETCONNECTED: "SETCONNECTED",
+  ADDRECEIVEDMESSAGE: "ADDRECEIVEDMESSAGE",
+  ADDSUBSCRIPTION: "ADDSUBSCRIPTION",
+  SUBSCRIBE: "SUBSCRIBE",
+  UNSUBSCRIBE: "UNSUBSCRIBE"
 };
 
 const defaultState = {
+  connected: false,
   receivedMessages: [],
-  sentMessages: []
+  sentMessages: [],
+  subscriptions: new Map()
+};
+const setConnected = value => {
+  return {
+    type: types.SETCONNECTED,
+    payload: {
+      value
+    }
+  };
 };
 const addReceivedMessage = (topic, message) => {
   return {
@@ -15,9 +29,39 @@ const addReceivedMessage = (topic, message) => {
     }
   };
 };
+const addSubscription = value => {
+  return {
+    type: types.ADDSUBSCRIPTION,
+    payload: {
+      value
+    }
+  };
+};
+const subscribe = value => {
+  return {
+    type: types.SUBSCRIBE,
+    payload: {
+      value
+    }
+  };
+};
+const unsubscribe = value => {
+  return {
+    type: types.UNSUBSCRIBE,
+    payload: {
+      value
+    }
+  };
+};
 
 export default (state = defaultState, action) => {
   switch (action.type) {
+    case types.SETCONNECTED: {
+      return {
+        ...state,
+        connected: action.payload.value
+      };
+    }
     case types.ADDRECEIVEDMESSAGE: {
       let receivedMessages = [...state.receivedMessages];
       receivedMessages.unshift({ ...action.payload });
@@ -27,10 +71,40 @@ export default (state = defaultState, action) => {
         receivedMessages
       };
     }
+    case types.ADDSUBSCRIPTION: {
+      let subscriptions = new Map(state.subscriptions);
+      subscriptions.set(action.payload.value, true);
+      return {
+        ...state,
+        subscriptions
+      };
+    }
+    case types.SUBSCRIBE: {
+      let subscriptions = new Map(state.subscriptions);
+      subscriptions.set(action.payload.value, true);
+      return {
+        ...state,
+        subscriptions
+      };
+    }
+    case types.UNSUBSCRIBE: {
+      let subscriptions = new Map(state.subscriptions);
+      subscriptions.set(action.payload.value, false);
+      return {
+        ...state,
+        subscriptions
+      };
+    }
     default:
       return state;
   }
 };
 
 export { types };
-export { addReceivedMessage };
+export {
+  setConnected,
+  addReceivedMessage,
+  addSubscription,
+  subscribe,
+  unsubscribe
+};
