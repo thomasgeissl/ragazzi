@@ -1,10 +1,10 @@
 import React from "react";
 import { Provider } from "react-redux";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import styled from "styled-components";
 
-import Status from "./components/Status";
-import Publisher from "./components/Publisher";
-import Subscriber from "./components/Subscriber";
+import Home from "./components/Home";
+import Dev from "./components/Dev";
 
 import store from "./store";
 
@@ -17,9 +17,16 @@ function App() {
   return (
     <Container>
       <Provider store={store}>
-        <Status></Status>
-        <Publisher></Publisher>
-        <Subscriber></Subscriber>
+        <Router>
+          <Switch>
+            <Route path="/dev">
+              <Dev />
+            </Route>
+            <Route path="/">
+              <Home />
+            </Route>
+          </Switch>
+        </Router>
       </Provider>
     </Container>
   );

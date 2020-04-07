@@ -129,7 +129,7 @@ function createWindow() {
                   fs.readFile(file, "utf8", (err, data) => {
                     if (err) throw err;
                     const obj = JSON.parse(data);
-                    obj.forEach(view => {
+                    obj.views.forEach(view => {
                       let win = new BrowserWindow({
                         ...view,
                         webPreferences: {

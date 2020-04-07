@@ -1,6 +1,7 @@
 const types = {
   SETCONNECTED: "SETCONNECTED",
   ADDRECEIVEDMESSAGE: "ADDRECEIVEDMESSAGE",
+  ADDSENTMESSAGE: "ADDSENTMESSAGE",
   ADDSUBSCRIPTION: "ADDSUBSCRIPTION",
   SUBSCRIBE: "SUBSCRIBE",
   UNSUBSCRIBE: "UNSUBSCRIBE"
@@ -23,6 +24,15 @@ const setConnected = value => {
 const addReceivedMessage = (topic, message) => {
   return {
     type: types.ADDRECEIVEDMESSAGE,
+    payload: {
+      topic,
+      message
+    }
+  };
+};
+const addSentMessage = (topic, message) => {
+  return {
+    type: types.ADDSENTMESSAGE,
     payload: {
       topic,
       message
@@ -71,6 +81,15 @@ export default (state = defaultState, action) => {
         receivedMessages
       };
     }
+    case types.ADDSENTMESSAGE: {
+      let sentMessages = [...state.sentMessages];
+      sentMessages.unshift({ ...action.payload });
+      sentMessages.slice(0, 99);
+      return {
+        ...state,
+        sentMessages
+      };
+    }
     case types.ADDSUBSCRIPTION: {
       let subscriptions = new Map(state.subscriptions);
       subscriptions.set(action.payload.value, true);
@@ -104,6 +123,7 @@ export { types };
 export {
   setConnected,
   addReceivedMessage,
+  addSentMessage,
   addSubscription,
   subscribe,
   unsubscribe
