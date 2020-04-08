@@ -1,0 +1,30 @@
+{
+  "title": "ragazzi demo project",
+  "description": "description",
+  "views": [
+    {
+      "title": "primary",
+      "path": "./primary/index.html",
+      "width": 1024,
+      "height": 768,
+      "frame": false,
+      "x": 480,
+      "y": 0
+    },
+    {
+      "title": "secondary",
+      "path": "./secondary/index.html",
+      "width": 480,
+      "height": 640,
+      "frame": false,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "externalViews": [
+    {
+      "title": "external",
+      "path": "./external/index.html"
+    }
+  ]
+}
