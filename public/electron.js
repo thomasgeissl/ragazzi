@@ -11,6 +11,8 @@ const isDev = require("electron-is-dev");
 const aedes = require("aedes")();
 const stats = require("aedes-stats");
 
+const args = process.argv.slice(1);
+
 let mainWindow;
 let mqttClient;
 let config = {
@@ -97,19 +99,30 @@ tcpServer.listen(tcpPort, function() {
   console.log(`server started and listening on port ${tcpPort}`);
   mqttClient = mqtt.connect(`mqtt://localhost:${tcpPort}`);
   mqttClient.on("message", (topic, message) => {
-    if (topic === "getConfig") {
+    if (topic === "ragazzi/project/config/get") {
       publishConfig();
     }
-    if (topic === "openProject") {
-      openProject();
+    if (topic === "ragazzi/project/open") {
+      openProject(message.toString());
+    }
+    if (topic === "ragazzi/project/open/choose") {
+      openProjectChooser();
     }
   });
-  mqttClient.subscribe("getConfig");
-  mqttClient.subscribe("openProject");
+  mqttClient.subscribe("ragazzi/#");
 });
 
-const openProject = () => {
+const openProjectChooser = () => {
+  if (config.views.length) {
+    return;
+  }
   const result = dialog.showOpenDialog({
+    filters: [
+      {
+        name: "ragazzi projects",
+        extensions: ["json", "ragazzi", "html", "htm"]
+      }
+    ],
     properties: ["openFile"]
   });
   result.then(res => {
@@ -118,64 +131,82 @@ const openProject = () => {
       const ext = file.split(".").slice(-1)[0];
       const dir = path.dirname(file);
       const fileRelative = path.relative(dir, file);
-      if (ext === "html") {
-        internalWebserver = http
-          .createServer(function(req, res) {
-            fs.readFile(
-              path.join(dir, url.parse(req.url, true).pathname),
-              function(err, data) {
-                if (err) {
-                  res.writeHead(404);
-                  res.end(JSON.stringify(err));
-                  return;
-                }
-                res.writeHead(200);
-                res.end(data);
-              }
-            );
-          })
-          .listen(8080);
-        let win = new BrowserWindow({
-          webPreferences: {
-            webSecurity: false
-          }
-        });
-        win.loadURL(
-          `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
-        );
-      } else if (ext === "json") {
-        internalWebserver = http
-          .createServer(function(req, res) {
-            const pathName = url.parse(req.url, true).pathname;
-            fs.readFile(path.join(dir, pathName), function(err, data) {
-              if (err) {
-                res.writeHead(404);
-                res.end(JSON.stringify(err));
-                return;
-              }
-              res.writeHead(200);
-              res.end(data);
-            });
-          })
-          .listen(internalHttpPort);
-        fs.readFile(file, "utf8", (err, data) => {
-          if (err) throw err;
-          const obj = JSON.parse(data);
-          config = obj;
-          publishConfig();
-
-          obj.views.forEach(view => {
-            let win = new BrowserWindow({
-              ...view,
-              webPreferences: {
-                webSecurity: false
-              }
-            });
-            win.loadURL(`http://localhost:${internalHttpPort}/${view.path}`);
-          });
-        });
+      if (ext === "html" || ext === "htm") {
+        console.log("open website");
+        openWebsite(dir, fileRelative);
+      } else if (ext === "ragazzi" || ext === "json") {
+        console.log("open project");
+        openProject(file);
       }
     }
+  });
+};
+const openWebsite = (dir, fileRelative) => {
+  if (config.views.length) {
+    return;
+  }
+  internalWebserver = http
+    .createServer(function(req, res) {
+      fs.readFile(path.join(dir, url.parse(req.url, true).pathname), function(
+        err,
+        data
+      ) {
+        if (err) {
+          res.writeHead(404);
+          res.end(JSON.stringify(err));
+          return;
+        }
+        res.writeHead(200);
+        res.end(data);
+      });
+    })
+    .listen(8080);
+  let win = new BrowserWindow({
+    webPreferences: {
+      webSecurity: false
+    }
+  });
+  win.loadURL(
+    `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
+  );
+};
+const openProject = file => {
+  if (config.views.length) {
+    return;
+  }
+  const dir = path.dirname(file);
+  internalWebserver = http
+    .createServer(function(req, res) {
+      const pathName = url.parse(req.url, true).pathname;
+      fs.readFile(path.join(dir, pathName), function(err, data) {
+        if (err) {
+          res.writeHead(404);
+          res.end(JSON.stringify(err));
+          return;
+        }
+        res.writeHead(200);
+        res.end(data);
+      });
+    })
+    .listen(internalHttpPort);
+  fs.readFile(file, "utf8", (err, data) => {
+    if (err) throw err;
+    const obj = JSON.parse(data);
+    config = {
+      ...config,
+      ...obj
+    };
+    publishConfig();
+
+    obj.views.forEach(view => {
+      let win = new BrowserWindow({
+        ...view,
+        webPreferences: {
+          webSecurity: false
+        }
+      });
+      win.loadURL(`http://localhost:${internalHttpPort}/${view.path}`);
+    });
   });
 };
 
@@ -208,7 +239,7 @@ function createWindow() {
           label: "open",
           accelerator: "CmdOrCtrl+o",
           click() {
-            openProject();
+            openProjectChooser();
           }
         },
         isMac ? { role: "close" } : { role: "quit" }
@@ -322,3 +353,10 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+if (args.length > 0) {
+  // dialog.showErrorBox("args", args[0]);
+  if (args[0].length > 2) {
+    openProject(args[0]);
+  }
+}

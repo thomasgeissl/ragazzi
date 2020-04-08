@@ -22,30 +22,28 @@ export default () => {
   return (
     <Container>
       <h2>publisher</h2>
-      <form>
-        <TextField
-          fullWidth
-          label="topic"
-          value={topic}
-          onChange={event => setTopic(event.target.value)}
-        />
-        <TextField
-          fullWidth
-          multiline
-          label="message"
-          value={message}
-          onChange={event => setMessage(event.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          type="button"
-          onClick={() => handleClick(topic, message)}
-        >
-          publish
-        </Button>
-      </form>
+      <TextField
+        fullWidth
+        label="topic"
+        value={topic}
+        onChange={event => setTopic(event.target.value)}
+      />
+      <TextField
+        fullWidth
+        multiline
+        label="message"
+        value={message}
+        onChange={event => setMessage(event.target.value)}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        type="button"
+        onClick={() => handleClick(topic, message)}
+      >
+        publish
+      </Button>
     </Container>
   );
 };

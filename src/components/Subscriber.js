@@ -62,27 +62,35 @@ export default () => {
           />
         );
       })}
-      <form>
-        <TextField
-          fullWidth
-          label="topic"
-          value={topic}
-          onChange={event => setTopic(event.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          type="button"
-          onClick={() => {
+      {/* <form> */}
+      <TextField
+        fullWidth
+        label="topic"
+        value={topic}
+        onChange={event => setTopic(event.target.value)}
+        onKeyPress={e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
             client.subscribe(topic);
             dispatch(addSubscription(topic));
             setTopic("");
-          }}
-        >
-          subscribe
-        </Button>
-      </form>
+          }
+        }}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        type="button"
+        onClick={() => {
+          client.subscribe(topic);
+          dispatch(addSubscription(topic));
+          setTopic("");
+        }}
+      >
+        subscribe
+      </Button>
+      {/* </form> */}
 
       <Logger>
         {messages.map((message, index) => {
