@@ -32,7 +32,7 @@
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
     "preelectron-dist": "yarn build",
-    "electron-dist": "electron-builder -mwl"
+    "electron-dist": "electron-builder -m"
   },
   "eslintConfig": {
     "extends": "react-app"

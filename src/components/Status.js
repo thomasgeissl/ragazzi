@@ -12,7 +12,7 @@ import { setConnected } from "../store/reducers/mqtt";
 
 setInterval(() => {
   store.dispatch(setConnected(client.connected));
-}, 1000);
+}, 3000);
 
 const Container = styled.div``;
 export default () => {

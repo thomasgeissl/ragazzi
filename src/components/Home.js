@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
+import Button from "@material-ui/core/Button";
+
 import client from "../mqtt";
 
 const Container = styled.div``;
@@ -14,7 +16,20 @@ export default () => {
   });
   return (
     <Container>
-      <h1>home</h1>
+      <h1>ciao ragazzi</h1>
+      {!config || !config.views || (
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          type="button"
+          onClick={event => {
+            client.publish("openProject", "");
+          }}
+        >
+          open
+        </Button>
+      )}
       <Link to="/dev">mqtt dev tools</Link>
       <ul>
         {config &&
