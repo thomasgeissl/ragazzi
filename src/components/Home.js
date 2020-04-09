@@ -13,6 +13,12 @@ const Broker = styled.section``;
 const Webserver = styled.section`
   margin-top: 50px;
 `;
+const Views = styled.section``;
+
+const Ciao = styled.h1``;
+const Arrivederci = styled.h2`
+  text-align: right;
+`;
 
 export default () => {
   const config = useSelector(state => state.system.config);
@@ -50,40 +56,50 @@ export default () => {
             </Button>
           </>
         )}
-
-        <ul>
-          {config &&
-            Object.entries(config).length !== 0 &&
-            config.views &&
-            config.views.map(view => {
-              return (
-                <li>
-                  <a
-                    href={`http://${config.ip}:${config.httpPort}/${view.path}`}
-                    target="_blank"
-                  >
-                    {view.title}
-                  </a>
-                </li>
-              );
-            })}
-          {config &&
-            Object.entries(config).length !== 0 &&
-            config.externalViews &&
-            config.externalViews.map(view => {
-              return (
-                <li>
-                  <a
-                    href={`http://${config.ip}:${config.httpPort}/${view.path}`}
-                    target="_blank"
-                  >
-                    {view.title}
-                  </a>
-                </li>
-              );
-            })}
-        </ul>
+        {config &&
+          Object.entries(config).length > 0 &&
+          config.views &&
+          (config.views.length > 0 || config.externalViews.length > 0) && (
+            <Views>
+              the following views are available:
+              <ul>
+                {config.views &&
+                  config.views.map(view => {
+                    return (
+                      <li>
+                        <a
+                          href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
+                          target="_blank"
+                        >
+                          {view.title}
+                        </a>
+                      </li>
+                    );
+                  })}
+                {config &&
+                  Object.entries(config).length !== 0 &&
+                  config.externalViews &&
+                  config.externalViews.map(view => {
+                    return (
+                      <li>
+                        <a
+                          href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
+                          target="_blank"
+                        >
+                          {view.title}
+                        </a>
+                      </li>
+                    );
+                  })}
+              </ul>
+              <p>
+                on external devices please navigate to {`http://${config.ip}`}{" "}
+                and select the corresponding view.
+              </p>
+            </Views>
+          )}
       </Webserver>
+      <Arrivederci>arrivederci a presto</Arrivederci>
     </Container>
   );
 };

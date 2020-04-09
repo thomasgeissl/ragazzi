@@ -90,7 +90,12 @@ const publishConfig = () => {
   const action = {
     type: "SETCONFIG",
     payload: {
-      value: { ...config, ip: ipAddresses[0], httpPort: internalHttpPort }
+      value: {
+        ...config,
+        ip: ipAddresses[0],
+        internalHttpPort,
+        externalHttpPort
+      }
     }
   };
   mqttClient.publish("ragazzi", JSON.stringify(action));
