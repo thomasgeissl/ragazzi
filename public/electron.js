@@ -48,7 +48,7 @@ const httpServer = http
     res.writeHead(200);
     let listItems = "";
     config.externalViews.map(view => {
-      listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}">${view.title}</a></li>`;
+      listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
     });
     res.write(`
     <!DOCTYPE html>
