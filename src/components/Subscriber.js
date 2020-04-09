@@ -14,6 +14,12 @@ import {
   unsubscribe
 } from "../store/reducers/mqtt";
 
+const Form = styled.div`
+  button {
+    margin-top: 15px;
+  }
+`;
+
 const Logger = styled.ul`
   max-height: 200px;
   overflow: scroll;
@@ -47,6 +53,7 @@ export default () => {
   return (
     <>
       <h2>subscriber</h2>
+
       {[...subscriptions.keys()].map(key => {
         return (
           <FormControlLabel
@@ -62,35 +69,35 @@ export default () => {
           />
         );
       })}
-      {/* <form> */}
-      <TextField
-        fullWidth
-        label="topic"
-        value={topic}
-        onChange={event => setTopic(event.target.value)}
-        onKeyPress={e => {
-          if (e.key === "Enter") {
-            e.preventDefault();
+      <Form>
+        <TextField
+          fullWidth
+          label="topic"
+          value={topic}
+          onChange={event => setTopic(event.target.value)}
+          onKeyPress={e => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              client.subscribe(topic);
+              dispatch(addSubscription(topic));
+              setTopic("");
+            }
+          }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          type="button"
+          onClick={() => {
             client.subscribe(topic);
             dispatch(addSubscription(topic));
             setTopic("");
-          }
-        }}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        type="button"
-        onClick={() => {
-          client.subscribe(topic);
-          dispatch(addSubscription(topic));
-          setTopic("");
-        }}
-      >
-        subscribe
-      </Button>
-      {/* </form> */}
+          }}
+        >
+          subscribe
+        </Button>
+      </Form>
 
       <Logger>
         {messages.map((message, index) => {

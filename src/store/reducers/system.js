@@ -3,6 +3,7 @@ const types = {
 };
 
 const defaultState = {
+  version: "0.1.0",
   config: {}
 };
 

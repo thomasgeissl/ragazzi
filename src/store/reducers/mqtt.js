@@ -11,7 +11,7 @@ const defaultState = {
   connected: false,
   receivedMessages: [],
   sentMessages: [],
-  subscriptions: new Map()
+  subscriptions: new Map([["$SYS/#", false]])
 };
 const setConnected = value => {
   return {

@@ -10,6 +10,11 @@ import { addSentMessage } from "../store/reducers/mqtt";
 import client from "../mqtt";
 
 const Container = styled.div``;
+const Form = styled.div`
+  button {
+    margin-top: 15px;
+  }
+`;
 
 export default () => {
   const [topic, setTopic] = useState("");
@@ -22,28 +27,30 @@ export default () => {
   return (
     <Container>
       <h2>publisher</h2>
-      <TextField
-        fullWidth
-        label="topic"
-        value={topic}
-        onChange={event => setTopic(event.target.value)}
-      />
-      <TextField
-        fullWidth
-        multiline
-        label="message"
-        value={message}
-        onChange={event => setMessage(event.target.value)}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        type="button"
-        onClick={() => handleClick(topic, message)}
-      >
-        publish
-      </Button>
+      <Form>
+        <TextField
+          fullWidth
+          label="topic"
+          value={topic}
+          onChange={event => setTopic(event.target.value)}
+        />
+        <TextField
+          fullWidth
+          multiline
+          label="message"
+          value={message}
+          onChange={event => setMessage(event.target.value)}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          type="button"
+          onClick={() => handleClick(topic, message)}
+        >
+          publish
+        </Button>
+      </Form>
     </Container>
   );
 };

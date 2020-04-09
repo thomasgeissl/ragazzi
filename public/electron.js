@@ -3,6 +3,7 @@ const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const portscanner = require("portscanner");
 const url = require("url");
 const mqtt = require("mqtt");
 const net = require("net");
@@ -319,7 +320,7 @@ function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 640,
-    height: 640,
+    height: 768,
     webPreferences: {
       nodeIntegration: true
     }

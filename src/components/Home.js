@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 import Button from "@material-ui/core/Button";
+import Header from "./Header";
 
 import client from "../mqtt";
 
@@ -20,10 +21,11 @@ export default () => {
   });
   return (
     <Container>
+      <Header></Header>
       <h1>ciao ragazzi</h1>
       <Broker>
         <p>
-          an mqtt broker is up and running at {config.ip}, it communicates on
+          a mqtt broker is up and running at {config.ip}, it communicates on
           ports 9001 (ws) and 1883 (tcp).
         </p>
         <p>
@@ -34,6 +36,7 @@ export default () => {
       <Webserver>
         {(!config || !config.views || config.views.length === 0) && (
           <>
+            <p>wanna host a project?</p>
             <Button
               variant="contained"
               color="primary"
