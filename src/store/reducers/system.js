@@ -1,10 +1,11 @@
+import packageConfig from "../../../package.json";
 const types = {
-  SETCONFIG: "SETCONFIG"
+  SETCONFIG: "SETCONFIG",
 };
 
 const defaultState = {
-  version: "0.1.0",
-  config: {}
+  version: packageConfig.version,
+  config: {},
 };
 
 export default (state = defaultState, action) => {
@@ -12,7 +13,7 @@ export default (state = defaultState, action) => {
     case types.SETCONFIG: {
       return {
         ...state,
-        config: action.payload.value
+        config: action.payload.value,
       };
     }
     default:

@@ -20,7 +20,7 @@ let config = {
   title: "",
   description: "",
   views: [],
-  externalViews: []
+  externalViews: [],
 };
 const isMac = process.platform === "darwin";
 const interfaces = os.networkInterfaces();
@@ -44,10 +44,10 @@ const externalHttpPort = 80;
 const tcpServer = net.createServer(aedes.handle);
 const wsServer = http.createServer();
 const httpServer = http
-  .createServer(function(req, res) {
+  .createServer(function (req, res) {
     res.writeHead(200);
     let listItems = "";
-    config.externalViews.map(view => {
+    config.externalViews.map((view) => {
       listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
     });
     res.write(`
@@ -74,7 +74,7 @@ const httpServer = http
 
 ws.createServer({ server: wsServer }, aedes.handle);
 
-wsServer.listen(wsPort, function() {
+wsServer.listen(wsPort, function () {
   console.log("websocket server listening on port ", wsPort);
 });
 
@@ -94,14 +94,14 @@ const publishConfig = () => {
         ...config,
         ip: ipAddresses[0],
         internalHttpPort,
-        externalHttpPort
-      }
-    }
+        externalHttpPort,
+      },
+    },
   };
   mqttClient.publish("ragazzi", JSON.stringify(action));
 };
 
-tcpServer.listen(tcpPort, function() {
+tcpServer.listen(tcpPort, function () {
   console.log(`server started and listening on port ${tcpPort}`);
   mqttClient = mqtt.connect(`mqtt://localhost:${tcpPort}`);
   mqttClient.on("message", (topic, message) => {
@@ -113,6 +113,13 @@ tcpServer.listen(tcpPort, function() {
     }
     if (topic === "ragazzi/project/open/choose") {
       openProjectChooser();
+    }
+    if (topic === "ragazzi/webapp/open") {
+      const file = message.toString();
+      const ext = file.split(".").slice(-1)[0];
+      const dir = path.dirname(file);
+      const fileRelative = path.relative(dir, file);
+      openWebsite(dir, fileRelative);
     }
   });
   mqttClient.subscribe("ragazzi/#");
@@ -126,22 +133,20 @@ const openProjectChooser = () => {
     filters: [
       {
         name: "ragazzi projects",
-        extensions: ["json", "ragazzi", "html", "htm"]
-      }
+        extensions: ["json", "ragazzi", "html", "htm"],
+      },
     ],
-    properties: ["openFile"]
+    properties: ["openFile"],
   });
-  result.then(res => {
+  result.then((res) => {
     if (!res.canceled) {
       const file = res.filePaths[0];
       const ext = file.split(".").slice(-1)[0];
       const dir = path.dirname(file);
       const fileRelative = path.relative(dir, file);
       if (ext === "html" || ext === "htm") {
-        console.log("open website");
         openWebsite(dir, fileRelative);
       } else if (ext === "ragazzi" || ext === "json") {
-        console.log("open project");
         openProject(file);
       }
     }
@@ -152,8 +157,8 @@ const openWebsite = (dir, fileRelative) => {
     return;
   }
   internalWebserver = http
-    .createServer(function(req, res) {
-      fs.readFile(path.join(dir, url.parse(req.url, true).pathname), function(
+    .createServer(function (req, res) {
+      fs.readFile(path.join(dir, url.parse(req.url, true).pathname), function (
         err,
         data
       ) {
@@ -169,22 +174,22 @@ const openWebsite = (dir, fileRelative) => {
     .listen(8080);
   let win = new BrowserWindow({
     webPreferences: {
-      webSecurity: false
-    }
+      webSecurity: false,
+    },
   });
   win.loadURL(
     `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
   );
 };
-const openProject = file => {
+const openProject = (file) => {
   if (config.views.length) {
     return;
   }
   const dir = path.dirname(file);
   internalWebserver = http
-    .createServer(function(req, res) {
+    .createServer(function (req, res) {
       const pathName = url.parse(req.url, true).pathname;
-      fs.readFile(path.join(dir, pathName), function(err, data) {
+      fs.readFile(path.join(dir, pathName), function (err, data) {
         if (err) {
           res.writeHead(404);
           res.end(JSON.stringify(err));
@@ -200,16 +205,16 @@ const openProject = file => {
     const obj = JSON.parse(data);
     config = {
       ...config,
-      ...obj
+      ...obj,
     };
     publishConfig();
 
-    obj.views.forEach(view => {
+    obj.views.forEach((view) => {
       let win = new BrowserWindow({
         ...view,
         webPreferences: {
-          webSecurity: false
-        }
+          webSecurity: false,
+        },
       });
       win.loadURL(`http://localhost:${internalHttpPort}/${view.path}`);
     });
@@ -232,9 +237,9 @@ function createWindow() {
               { role: "hideothers" },
               { role: "unhide" },
               { type: "separator" },
-              { role: "quit" }
-            ]
-          }
+              { role: "quit" },
+            ],
+          },
         ]
       : []),
     // { role: 'fileMenu' }
@@ -246,10 +251,10 @@ function createWindow() {
           accelerator: "CmdOrCtrl+o",
           click() {
             openProjectChooser();
-          }
+          },
         },
-        isMac ? { role: "close" } : { role: "quit" }
-      ]
+        isMac ? { role: "close" } : { role: "quit" },
+      ],
     },
     // { role: 'editMenu' }
     {
@@ -269,11 +274,11 @@ function createWindow() {
               { type: "separator" },
               {
                 label: "Speech",
-                submenu: [{ role: "startspeaking" }, { role: "stopspeaking" }]
-              }
+                submenu: [{ role: "startspeaking" }, { role: "stopspeaking" }],
+              },
             ]
-          : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }])
-      ]
+          : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }]),
+      ],
     },
     // { role: 'viewMenu' }
     {
@@ -287,8 +292,8 @@ function createWindow() {
         { role: "zoomin" },
         { role: "zoomout" },
         { type: "separator" },
-        { role: "togglefullscreen" }
-      ]
+        { role: "togglefullscreen" },
+      ],
     },
     // { role: 'windowMenu' }
     {
@@ -301,10 +306,10 @@ function createWindow() {
               { type: "separator" },
               { role: "front" },
               { type: "separator" },
-              { role: "window" }
+              { role: "window" },
             ]
-          : [{ role: "close" }])
-      ]
+          : [{ role: "close" }]),
+      ],
     },
     {
       role: "help",
@@ -314,10 +319,10 @@ function createWindow() {
           click: async () => {
             const { shell } = require("electron");
             await shell.openExternal("https://electronjs.org");
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   ];
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
@@ -327,8 +332,8 @@ function createWindow() {
     width: 640,
     height: 768,
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   });
 
   // and load the index.html of the app.
@@ -361,7 +366,7 @@ app.on("activate", () => {
 });
 
 if (args.length > 0) {
-  // dialog.showErrorBox("args", args[0]);
+  // dialog.showErrorBox("args", "" + process.argv.length);
   if (args[0].length > 2) {
     openProject(args[0]);
   }

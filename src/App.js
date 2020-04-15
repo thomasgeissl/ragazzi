@@ -31,8 +31,17 @@ const Dropzone = styled.div`
 `;
 
 function App() {
-  const onDrop = useCallback(acceptedFiles => {
-    client.publish("ragazzi/project/open", acceptedFiles[0].path);
+  const onDrop = useCallback((acceptedFiles) => {
+    const regex = /(?:\.([^.]+))?$/;
+    const ext = regex.exec(acceptedFiles[0].path);
+
+    if (ext.includes("html")) {
+      client.publish("ragazzi/webapp/open", acceptedFiles[0].path);
+      console.log("open html");
+    }
+    if (ext.includes("json") || ext.includes("ragazzi")) {
+      client.publish("ragazzi/project/open", acceptedFiles[0].path);
+    }
   }, []);
   const { getRootProps } = useDropzone({ onDrop });
   return (

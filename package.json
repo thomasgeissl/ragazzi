@@ -1,6 +1,6 @@
 {
   "name": "ragazzi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "public/electron.js",
   "homepage": "./",
@@ -33,7 +33,7 @@
     "eject": "react-scripts eject",
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
-    "preelectron-dist": "yarn build",
+    "preelectron-dist": "yarn build && cp public/icon.icns build",
     "electron-dist": "electron-builder -mwl"
   },
   "eslintConfig": {
@@ -62,7 +62,15 @@
     "productName": "ragazzi",
     "copyright": "Copyright © 2019",
     "mac": {
-      "category": "public.app-category.utilities"
+      "target": "dmg",
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": "portable"
     },
     "files": [
       "build/**/*",
