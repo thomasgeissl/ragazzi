@@ -33,7 +33,7 @@
     "eject": "react-scripts eject",
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
-    "preelectron-dist": "yarn build && cp public/icon.icns build",
+    "preelectron-dist": "yarn build && cp public/icon.icns ./build && cp ./public/entitlements.mac.plist ./build",
     "electron-dist": "electron-builder -mwl"
   },
   "eslintConfig": {
@@ -58,7 +58,7 @@
     "wait-on": "^4.0.1"
   },
   "build": {
-    "appId": "com.my-website.my-app",
+    "appId": "com.ixds.ragazzi",
     "productName": "ragazzi",
     "copyright": "Copyright © 2019",
     "mac": {
