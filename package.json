@@ -13,6 +13,7 @@
     "aedes": "^0.40.1",
     "aedes-stats": "^3.0.0",
     "electron-is-dev": "^1.1.0",
+    "electron-notarize": "^0.3.0",
     "mqtt": "^3.0.0",
     "portscanner": "^2.2.0",
     "react": "^16.13.1",
@@ -33,7 +34,7 @@
     "eject": "react-scripts eject",
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
-    "preelectron-dist": "yarn build && cp public/icon.icns ./build && cp ./public/entitlements.mac.plist ./build",
+    "preelectron-dist": "yarn build && cp ./public/entitlements.mac.plist ./build",
     "electron-dist": "electron-builder -mwl"
   },
   "eslintConfig": {
@@ -60,7 +61,7 @@
   "build": {
     "appId": "com.ixds.ragazzi",
     "productName": "ragazzi",
-    "copyright": "Copyright © 2019",
+    "copyright": "Copyright © 2020",
     "mac": {
       "target": "dmg",
       "category": "public.app-category.developer-tools",
