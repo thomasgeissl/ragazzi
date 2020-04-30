@@ -7,7 +7,7 @@ import TextField from "@material-ui/core/TextField";
 
 import { addSentMessage } from "../store/reducers/mqtt";
 
-import client from "../mqtt";
+import { getClient } from "../mqtt";
 
 const Container = styled.div``;
 const Form = styled.div`
@@ -22,7 +22,7 @@ export default () => {
   const dispatch = useDispatch();
   function handleClick(topic, message) {
     dispatch(addSentMessage(topic, message));
-    return client.publish(topic, message);
+    return getClient().publish(topic, message);
   }
   return (
     <Container>
@@ -32,14 +32,14 @@ export default () => {
           fullWidth
           label="topic"
           value={topic}
-          onChange={event => setTopic(event.target.value)}
+          onChange={(event) => setTopic(event.target.value)}
         />
         <TextField
           fullWidth
           multiline
           label="message"
           value={message}
-          onChange={event => setMessage(event.target.value)}
+          onChange={(event) => setMessage(event.target.value)}
         />
         <Button
           variant="contained"

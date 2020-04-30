@@ -4,21 +4,33 @@ const types = {
   ADDSENTMESSAGE: "ADDSENTMESSAGE",
   ADDSUBSCRIPTION: "ADDSUBSCRIPTION",
   SUBSCRIBE: "SUBSCRIBE",
-  UNSUBSCRIBE: "UNSUBSCRIBE"
+  UNSUBSCRIBE: "UNSUBSCRIBE",
+  SETBROKER: "SETBROKER",
 };
 
 const defaultState = {
   connected: false,
   receivedMessages: [],
   sentMessages: [],
-  subscriptions: new Map([["$SYS/#", false]])
+  host: "localhost",
+  port: 9001,
+  subscriptions: new Map([["$SYS/#", false]]),
 };
-const setConnected = value => {
+const setBroker = (host, port) => {
+  return {
+    type: types.SETBROKER,
+    payload: {
+      host,
+      port,
+    },
+  };
+};
+const setConnected = (value) => {
   return {
     type: types.SETCONNECTED,
     payload: {
-      value
-    }
+      value,
+    },
   };
 };
 const addReceivedMessage = (topic, message) => {
@@ -26,8 +38,8 @@ const addReceivedMessage = (topic, message) => {
     type: types.ADDRECEIVEDMESSAGE,
     payload: {
       topic,
-      message
-    }
+      message,
+    },
   };
 };
 const addSentMessage = (topic, message) => {
@@ -35,41 +47,48 @@ const addSentMessage = (topic, message) => {
     type: types.ADDSENTMESSAGE,
     payload: {
       topic,
-      message
-    }
+      message,
+    },
   };
 };
-const addSubscription = value => {
+const addSubscription = (value) => {
   return {
     type: types.ADDSUBSCRIPTION,
     payload: {
-      value
-    }
+      value,
+    },
   };
 };
-const subscribe = value => {
+const subscribe = (value) => {
   return {
     type: types.SUBSCRIBE,
     payload: {
-      value
-    }
+      value,
+    },
   };
 };
-const unsubscribe = value => {
+const unsubscribe = (value) => {
   return {
     type: types.UNSUBSCRIBE,
     payload: {
-      value
-    }
+      value,
+    },
   };
 };
 
 export default (state = defaultState, action) => {
   switch (action.type) {
+    case types.SETBROKER: {
+      return {
+        ...state,
+        host: action.payload.host,
+        port: action.payload.port,
+      };
+    }
     case types.SETCONNECTED: {
       return {
         ...state,
-        connected: action.payload.value
+        connected: action.payload.value,
       };
     }
     case types.ADDRECEIVEDMESSAGE: {
@@ -78,7 +97,7 @@ export default (state = defaultState, action) => {
       receivedMessages.slice(0, 99);
       return {
         ...state,
-        receivedMessages
+        receivedMessages,
       };
     }
     case types.ADDSENTMESSAGE: {
@@ -87,7 +106,7 @@ export default (state = defaultState, action) => {
       sentMessages.slice(0, 99);
       return {
         ...state,
-        sentMessages
+        sentMessages,
       };
     }
     case types.ADDSUBSCRIPTION: {
@@ -95,7 +114,7 @@ export default (state = defaultState, action) => {
       subscriptions.set(action.payload.value, true);
       return {
         ...state,
-        subscriptions
+        subscriptions,
       };
     }
     case types.SUBSCRIBE: {
@@ -103,7 +122,7 @@ export default (state = defaultState, action) => {
       subscriptions.set(action.payload.value, true);
       return {
         ...state,
-        subscriptions
+        subscriptions,
       };
     }
     case types.UNSUBSCRIBE: {
@@ -111,7 +130,7 @@ export default (state = defaultState, action) => {
       subscriptions.set(action.payload.value, false);
       return {
         ...state,
-        subscriptions
+        subscriptions,
       };
     }
     default:
@@ -121,10 +140,11 @@ export default (state = defaultState, action) => {
 
 export { types };
 export {
+  setBroker,
   setConnected,
   addReceivedMessage,
   addSentMessage,
   addSubscription,
   subscribe,
-  unsubscribe
+  unsubscribe,
 };

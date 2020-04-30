@@ -3,12 +3,23 @@ import store from "./store";
 import { addReceivedMessage } from "./store/reducers/mqtt";
 
 const client = mqtt.connect("ws://localhost:9001");
-client.on("connect", function() {
-  client.subscribe("test", function(err) {});
-});
+let secondClient;
 
-client.on("message", function(topic, message) {
-  store.dispatch(addReceivedMessage(topic, message.toString()));
-});
+const getClient = () => {
+  return secondClient ? secondClient : client;
+};
+
+const connect = (host, port) => {
+  if (secondClient) {
+    secondClient.end();
+  }
+  secondClient = mqtt.connect(`ws://${host}:${port}`);
+  secondClient.on("message", function (topic, message) {
+    store.dispatch(addReceivedMessage(topic, message.toString()));
+  });
+  console.log("connected to", host, port);
+  return secondClient;
+};
+export { getClient, connect };
 
 export default client;

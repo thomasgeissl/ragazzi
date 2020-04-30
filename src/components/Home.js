@@ -21,7 +21,7 @@ const Arrivederci = styled.h2`
 `;
 
 export default () => {
-  const config = useSelector(state => state.system.config);
+  const config = useSelector((state) => state.system.config);
   useEffect(() => {
     client.publish("ragazzi/project/config/get", "");
   });
@@ -48,7 +48,7 @@ export default () => {
               color="primary"
               fullWidth
               type="button"
-              onClick={event => {
+              onClick={(event) => {
                 client.publish("ragazzi/project/open/choose", "");
               }}
             >
@@ -64,9 +64,9 @@ export default () => {
               the following views are available:
               <ul>
                 {config.views &&
-                  config.views.map(view => {
+                  config.views.map((view, index) => {
                     return (
-                      <li>
+                      <li key={index}>
                         <a
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
@@ -79,7 +79,7 @@ export default () => {
                 {config &&
                   Object.entries(config).length !== 0 &&
                   config.externalViews &&
-                  config.externalViews.map(view => {
+                  config.externalViews.map((view) => {
                     return (
                       <li>
                         <a

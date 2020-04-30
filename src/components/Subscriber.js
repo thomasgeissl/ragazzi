@@ -6,12 +6,12 @@ import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import TextField from "@material-ui/core/TextField";
-import client from "../mqtt";
+import { getClient } from "../mqtt";
 
 import {
   addSubscription,
   subscribe,
-  unsubscribe
+  unsubscribe,
 } from "../store/reducers/mqtt";
 
 const Form = styled.div`
@@ -35,17 +35,17 @@ const Entry = styled.li`
 
 export default () => {
   const [topic, setTopic] = useState("");
-  const messages = useSelector(state => state.mqtt.receivedMessages);
-  const subscriptions = useSelector(state => state.mqtt.subscriptions);
+  const messages = useSelector((state) => state.mqtt.receivedMessages);
+  const subscriptions = useSelector((state) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
 
-  const toggleSubscription = key => {
+  const toggleSubscription = (key) => {
     return () => {
       if (subscriptions.get(key)) {
-        client.unsubscribe(key);
+        getClient().unsubscribe(key);
         dispatch(unsubscribe(key));
       } else {
-        client.subscribe(key);
+        getClient().subscribe(key);
         dispatch(subscribe(key));
       }
     };
@@ -54,13 +54,14 @@ export default () => {
     <>
       <h2>subscriber</h2>
 
-      {[...subscriptions.keys()].map(key => {
+      {[...subscriptions.keys()].map((key, index) => {
         return (
           <FormControlLabel
+            key={index}
             control={
               <Checkbox
                 checked={subscriptions.get(key)}
-                onChange={event => toggleSubscription(key)()}
+                onChange={(event) => toggleSubscription(key)()}
                 name={key}
                 color="primary"
               />
@@ -74,11 +75,11 @@ export default () => {
           fullWidth
           label="topic"
           value={topic}
-          onChange={event => setTopic(event.target.value)}
-          onKeyPress={e => {
+          onChange={(event) => setTopic(event.target.value)}
+          onKeyPress={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              client.subscribe(topic);
+              getClient().subscribe(topic);
               dispatch(addSubscription(topic));
               setTopic("");
             }
@@ -90,7 +91,7 @@ export default () => {
           fullWidth
           type="button"
           onClick={() => {
-            client.subscribe(topic);
+            getClient().subscribe(topic);
             dispatch(addSubscription(topic));
             setTopic("");
           }}
