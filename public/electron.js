@@ -15,6 +15,7 @@ const stats = require("aedes-stats");
 const args = process.argv.slice(1);
 
 let mainWindow;
+let windows = [];
 let mqttClient;
 let config = {
   title: "",
@@ -38,19 +39,37 @@ const ip = ipAddresses.length > 0 ? ipAddresses[0] : "127.0.0.1";
 // start ws, tcp and web servers
 const wsPort = 9001;
 const tcpPort = 1883;
-const internalHttpPort = 8080;
-const externalHttpPort = 80;
+let internalHttpPort = 8080;
+let externalHttpPort = 80;
+
+let internalWebserver;
+let externalWebserver;
 
 const tcpServer = net.createServer(aedes.handle);
-const wsServer = http.createServer();
-const httpServer = http
-  .createServer(function (req, res) {
-    res.writeHead(200);
-    let listItems = "";
-    config.externalViews.map((view) => {
-      listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
-    });
-    res.write(`
+const wsServer = http.createServer().listen(wsPort, function () {
+  console.log("websocket server listening on port ", wsPort);
+});
+ws.createServer({ server: wsServer }, aedes.handle);
+
+// publish stats via mqtt: $SYS/#
+stats(aedes);
+
+portscanner.findAPortNotInUse(
+  externalHttpPort,
+  externalHttpPort + 100,
+  "127.0.0.1",
+  function (error, port) {
+    console.log(error);
+    console.log("AVAILABLE PORT AT: " + port);
+    externalHttpPort = port;
+    externalWebserver = http
+      .createServer(function (req, res) {
+        res.writeHead(200);
+        let listItems = "";
+        config.externalViews.map((view) => {
+          listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
+        });
+        res.write(`
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -68,20 +87,11 @@ const httpServer = http
       </body>
     </html>
     `);
-    res.end();
-  })
-  .listen(externalHttpPort);
-
-ws.createServer({ server: wsServer }, aedes.handle);
-
-wsServer.listen(wsPort, function () {
-  console.log("websocket server listening on port ", wsPort);
-});
-
-let internalWebserver;
-
-// publish stats via mqtt: $SYS/#
-stats(aedes);
+        res.end();
+      })
+      .listen(externalHttpPort);
+  }
+);
 
 const parameterAppendix =
   ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
@@ -125,10 +135,34 @@ tcpServer.listen(tcpPort, function () {
   mqttClient.subscribe("ragazzi/#");
 });
 
+const createInternalWebserver = (dir) => {
+  portscanner.findAPortNotInUse(
+    internalHttpPort,
+    internalHttpPort + 100,
+    "127.0.0.1",
+    function (error, port) {
+      console.log("AVAILABLE PORT AT: " + port);
+      internalHttpPort = port;
+      internalWebserver = http
+        .createServer(function (req, res) {
+          fs.readFile(
+            path.join(dir, url.parse(req.url, true).pathname),
+            function (err, data) {
+              if (err) {
+                res.writeHead(404);
+                res.end(JSON.stringify(err));
+                return;
+              }
+              res.writeHead(200);
+              res.end(data);
+            }
+          );
+        })
+        .listen(internalHttpPort);
+    }
+  );
+};
 const openProjectChooser = () => {
-  if (config.views.length) {
-    return;
-  }
   const result = dialog.showOpenDialog({
     filters: [
       {
@@ -152,54 +186,50 @@ const openProjectChooser = () => {
     }
   });
 };
-const openWebsite = (dir, fileRelative) => {
-  if (config.views.length) {
-    return;
-  }
-  internalWebserver = http
-    .createServer(function (req, res) {
-      fs.readFile(path.join(dir, url.parse(req.url, true).pathname), function (
-        err,
-        data
-      ) {
-        if (err) {
-          res.writeHead(404);
-          res.end(JSON.stringify(err));
-          return;
-        }
-        res.writeHead(200);
-        res.end(data);
-      });
-    })
-    .listen(8080);
+
+const addWindow = (url) => {
   let win = new BrowserWindow({
     webPreferences: {
       webSecurity: false,
     },
   });
-  win.loadURL(
-    `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
-  );
+  win.loadURL(url);
+  windows.push(win);
 };
-const openProject = (file) => {
-  if (config.views.length) {
-    return;
+const openWebsite = (dir, fileRelative) => {
+  windows.forEach((win) => {
+    win.close();
+  });
+  if (internalWebserver) {
+    internalWebserver.close(() => {
+      internalWebserver = null;
+      createInternalWebserver(dir);
+      addWindow(
+        `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
+      );
+    });
+  } else {
+    createInternalWebserver(dir);
+    addWindow(
+      `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
+    );
   }
+};
+
+const openProject = (file) => {
+  windows.forEach((win) => {
+    win.close();
+  });
   const dir = path.dirname(file);
-  internalWebserver = http
-    .createServer(function (req, res) {
-      const pathName = url.parse(req.url, true).pathname;
-      fs.readFile(path.join(dir, pathName), function (err, data) {
-        if (err) {
-          res.writeHead(404);
-          res.end(JSON.stringify(err));
-          return;
-        }
-        res.writeHead(200);
-        res.end(data);
-      });
-    })
-    .listen(internalHttpPort);
+  if (internalWebserver) {
+    internalWebserver.close(() => {
+      internalWebserver = null;
+      createInternalWebserver(dir);
+    });
+  } else {
+    createInternalWebserver(dir);
+  }
+
   fs.readFile(file, "utf8", (err, data) => {
     if (err) throw err;
     const obj = JSON.parse(data);
@@ -210,13 +240,7 @@ const openProject = (file) => {
     publishConfig();
 
     obj.views.forEach((view) => {
-      let win = new BrowserWindow({
-        ...view,
-        webPreferences: {
-          webSecurity: false,
-        },
-      });
-      win.loadURL(`http://localhost:${internalHttpPort}/${view.path}`);
+      addWindow(`http://localhost:${internalHttpPort}/${view.path}`);
     });
   });
 };

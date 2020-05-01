@@ -93,7 +93,12 @@ export default () => {
                   })}
               </ul>
               <p>
-                on external devices please navigate to {`http://${config.ip}`}{" "}
+                on external devices please navigate to{" "}
+                {`http://${config.ip}${
+                  config.externalHttpPort !== 80
+                    ? ":" + config.externalHttpPort
+                    : ""
+                }`}{" "}
                 and select the corresponding view.
               </p>
             </Views>
