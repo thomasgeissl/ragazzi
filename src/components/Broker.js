@@ -6,8 +6,8 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 
-import { setBroker } from "../store/reducers/mqtt";
-import { connect } from "../mqtt";
+import { setBroker, unsubscribeAll } from "../store/reducers/mqtt";
+import { connect, getClient } from "../mqtt";
 
 const Container = styled.div``;
 const Form = styled.div`
@@ -22,8 +22,13 @@ export default () => {
   const connected = useSelector((state) => state.mqtt.connected);
   const connectedHost = useSelector((state) => state.mqtt.host);
   const connectedPort = useSelector((state) => state.mqtt.port);
+  const subscriptions = useSelector((state) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
   function handleClick(host, port) {
+    [...subscriptions.keys()].forEach((key) => {
+      getClient().unsubscribe(key);
+    });
+    dispatch(unsubscribeAll());
     dispatch(setBroker(host, port));
     connect(host, port);
   }
