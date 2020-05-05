@@ -187,8 +187,10 @@ const openProjectChooser = () => {
   });
 };
 
-const addWindow = (url) => {
+const addWindow = (url, opts) => {
+  opts = opts ? opts : {};
   let win = new BrowserWindow({
+    ...opts,
     webPreferences: {
       webSecurity: false,
     },
@@ -240,7 +242,7 @@ const openProject = (file) => {
     publishConfig();
 
     obj.views.forEach((view) => {
-      addWindow(`http://localhost:${internalHttpPort}/${view.path}`);
+      addWindow(`http://localhost:${internalHttpPort}/${view.path}`, view);
     });
   });
 };
