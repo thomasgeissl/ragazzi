@@ -5,6 +5,7 @@ const types = {
   ADDSUBSCRIPTION: "ADDSUBSCRIPTION",
   SUBSCRIBE: "SUBSCRIBE",
   UNSUBSCRIBE: "UNSUBSCRIBE",
+  UNSUBSCRIBEALL: "UNSUBSCRIBEALL",
   SETBROKER: "SETBROKER",
 };
 
@@ -75,6 +76,11 @@ const unsubscribe = (value) => {
     },
   };
 };
+const unsubscribeAll = () => {
+  return {
+    type: types.UNSUBSCRIBEALL,
+  };
+};
 
 export default (state = defaultState, action) => {
   switch (action.type) {
@@ -133,6 +139,16 @@ export default (state = defaultState, action) => {
         subscriptions,
       };
     }
+    case types.UNSUBSCRIBEALL: {
+      let subscriptions = new Map(state.subscriptions);
+      [...subscriptions.keys()].forEach((key) => {
+        subscriptions.set(key, false);
+      });
+      return {
+        ...state,
+        subscriptions,
+      };
+    }
     default:
       return state;
   }
@@ -147,4 +163,5 @@ export {
   addSubscription,
   subscribe,
   unsubscribe,
+  unsubscribeAll,
 };

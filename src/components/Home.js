@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
@@ -28,7 +28,7 @@ export default () => {
   return (
     <Container>
       <Header></Header>
-      <h1>ciao ragazzi</h1>
+      <Ciao>ciao ragazzi</Ciao>
       <Broker>
         <p>
           a mqtt broker is up and running at {config.ip}, it communicates on
@@ -70,6 +70,7 @@ export default () => {
                         <a
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {view.title}
                         </a>
@@ -79,12 +80,13 @@ export default () => {
                 {config &&
                   Object.entries(config).length !== 0 &&
                   config.externalViews &&
-                  config.externalViews.map((view) => {
+                  config.externalViews.map((view, index) => {
                     return (
-                      <li>
+                      <li key={index}>
                         <a
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {view.title}
                         </a>
@@ -93,7 +95,12 @@ export default () => {
                   })}
               </ul>
               <p>
-                on external devices please navigate to {`http://${config.ip}`}{" "}
+                on external devices please navigate to{" "}
+                {`http://${config.ip}${
+                  config.externalHttpPort !== 80
+                    ? ":" + config.externalHttpPort
+                    : ""
+                }`}{" "}
                 and select the corresponding view.
               </p>
             </Views>

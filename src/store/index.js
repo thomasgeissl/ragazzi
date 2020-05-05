@@ -1,5 +1,5 @@
 import { createStore, applyMiddleware, compose } from "redux";
-import { createEpicMiddleware } from "redux-observable";
+// import { createEpicMiddleware } from "redux-observable";
 
 import rootReducer from "./reducers/rootReducer";
 // import rootEpic from './epics/rootEpic'
@@ -18,7 +18,7 @@ const store = createStore(
 // epicMiddleware.run(rootEpic);
 // store.subscribe(() => console.log(store.getState()))
 store.dispatch({
-  type: "INIT"
+  type: "INIT",
 });
 
 export default store;
