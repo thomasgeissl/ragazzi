@@ -391,9 +391,9 @@ app.on("activate", () => {
   }
 });
 
-if (args.length > 0) {
-  // dialog.showErrorBox("args", "" + process.argv.length);
-  if (args[0].length > 2) {
-    openProject(args[0]);
-  }
-}
+// if (args.length > 0) {
+//   // dialog.showErrorBox("args", "" + process.argv.length);
+//   if (args[0].length > 2) {
+//     openProject(args[0]);
+//   }
+// }

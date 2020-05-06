@@ -1,6 +1,6 @@
 {
   "name": "ragazzi",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "main": "public/electron.js",
   "homepage": "./",
@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^7.1.2",
     "aedes": "^0.40.1",
     "aedes-stats": "^3.0.0",
+    "dotenv": "^8.2.0",
     "electron-is-dev": "^1.1.0",
     "electron-notarize": "^0.3.0",
     "mqtt": "^3.0.0",
@@ -68,10 +69,12 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "icon": "build/icon.png"
     },
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "build/icon.png"
     },
     "files": [
       "build/**/*",
@@ -79,6 +82,7 @@
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "afterSign": "scripts/notarize.js"
   }
 }

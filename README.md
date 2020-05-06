@@ -12,4 +12,4 @@ This is still a work in progess.
 
 - yarn install
 - yarn electron-dev
-- yarn electron-build
+- yarn electron-dist
