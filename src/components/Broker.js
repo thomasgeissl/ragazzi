@@ -85,7 +85,7 @@ export default () => {
       <CardContent>
         <Grid container spacing={3} direction="row" justify="space-between" alignItems="center">
             <Grid item container spacing={3} xs={8}>
-              <Grid item xs={8}>
+              <Grid item xs={10}>
               <TextField
                 fullWidth
                 label="host"
@@ -93,7 +93,7 @@ export default () => {
                 onChange={(event) => setHost(event.target.value)}
               />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={2}>
               <TextField
                 fullWidth
                 label="port"

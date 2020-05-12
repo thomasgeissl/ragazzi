@@ -5,13 +5,14 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import Home from "./components/Home";
 import Dev from "./components/Dev";
+import Footer from "./components/Footer";
 
 import { makeStyles } from '@material-ui/core/styles';
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/core/styles'
 import { green, orange } from '@material-ui/core/colors';
 
-import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
 
 import store from "./store";
 import mqtt from "mqtt";
@@ -29,13 +30,13 @@ client.on("message", (topic, message) => {
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: '#ff0000'
+      main: '#CE2B37'
     },
     secondary: {
       main: '#ffffff'
     },
     success: {
-      main: '#00ff00'
+      main: '#009246'
     }
   }
 });
@@ -43,7 +44,7 @@ const theme = createMuiTheme({
 const useStyles = makeStyles({
   app: {
     width: '100vw',
-    height: '100vw',
+    height: '100vh',
     padding: '0px',
     margin: '0px',
     outline: 'none',
@@ -51,7 +52,7 @@ const useStyles = makeStyles({
   },
   dropzone: {
     width: '100vw',
-    height: '100vw',
+    height: '100vh',
     outline: 'none',
     padding: '0px',
     margin: '0px'
@@ -76,22 +77,23 @@ function App() {
   
   return (
     <ThemeProvider theme={theme}>
-      <Box className={classes.app}>
-        <Box className={green.dropzone} {...getRootProps()}>
-            <Provider store={store}>
-              <Router>
-                <Switch>
-                  <Route path="/dev">
-                    <Dev />
-                  </Route>
-                  <Route path="/">
-                    <Home />
-                  </Route>
-                </Switch>
-              </Router>
-            </Provider>
-          </Box>
-        </Box>
+        <Grid className={classes.app} container direction="column" justify="space-between" alignItems="center">
+          <Grid item className={green.dropzone} {...getRootProps()}>
+              <Provider store={store}>
+                <Router>
+                  <Switch>
+                    <Route path="/dev">
+                      <Dev />
+                    </Route>
+                    <Route path="/">
+                      <Home />
+                    </Route>
+                  </Switch>
+                </Router>
+              </Provider>
+            </Grid>
+            <Footer item></Footer>
+          </Grid>
     </ThemeProvider>
 
   );

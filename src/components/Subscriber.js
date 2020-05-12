@@ -30,7 +30,7 @@ export default () => {
 
     <Card className={classes.subscriber} >
       <CardContent>
-      <Typography color="textSecondary" gutterBottom>Subscribe</Typography>
+      <Typography color="textPrimary" gutterBottom><b>Subscribe</b></Typography>
         <TextField
           fullWidth
           label="topic"

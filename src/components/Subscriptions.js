@@ -35,7 +35,7 @@ export default () => {
 
       <Card>
       <CardContent>
-      <Typography color="textSecondary" gutterBottom>Subscriptions</Typography>
+      <Typography color="textPrimary" gutterBottom><b>Subscribtions</b></Typography>
 
         <List dense>
       {[...subscriptions.keys()].map((key, index) => {

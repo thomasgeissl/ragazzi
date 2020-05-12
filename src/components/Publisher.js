@@ -25,7 +25,7 @@ export default () => {
   return (
     <Card>
       <CardContent>
-      <Typography color="textSecondary" gutterBottom>Publish</Typography>
+      <Typography color="textPrimary" gutterBottom><b>Publish</b></Typography>
         <TextField
           fullWidth
           label="topic"

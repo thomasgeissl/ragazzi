@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import Link from '@material-ui/core/Link';
 import styled from "styled-components";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
@@ -22,7 +22,7 @@ export default () => {
   const version = useSelector(state => state.system.version);
   const location = useLocation();
   return (
-   <Container>
+   <Box>
     <Grid container direction="row" justify="space-between" alignItems="center">
       <Grid item>
         {location.pathname !== "/" && (
@@ -32,10 +32,10 @@ export default () => {
         )}
       </Grid>
       <Grid item>
-        <Typography variant="caption">v {version}</Typography>
+        <Typography variant="caption"><Box color="text.secondary">v {version}</Box></Typography>
       </Grid>
     </Grid>
-    </Container>
+    </Box>
   );
 
 };

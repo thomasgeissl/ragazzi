@@ -12,13 +12,18 @@ import Link from '@material-ui/core/Link';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import CheckIcon from '@material-ui/icons/Check';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon'; 
+import DesktopWindowsIcon from '@material-ui/icons/DesktopWindows';
+import BuildIcon from '@material-ui/icons/Build';
 
 import client from "../mqtt";
 
 const useStyles = makeStyles({
   h1: 
   {
-    color: '#ff0000'
+    marginTop: '20px'
   }
 });
 
@@ -36,7 +41,7 @@ export default () => {
       <Grid container direction="colum" spacing={2}>
 
       <Grid item xs={12}>
-        <Typography variant="h1" className={classes.h1}><i>ciao ragazzi.</i></Typography>
+        <Typography variant="h2" color="primary" className={classes.h1}><i>ciao ragazzi.</i></Typography>
       </Grid>
 
       <Grid item  xs={12}>
@@ -88,13 +93,14 @@ export default () => {
             <Grid item xs={6}>
           <Card>
             <CardContent>
-            <Typography color="textSecondary" gutterBottom>Views</Typography>
+            <Typography color="textPrimary" gutterBottom><b>Views</b></Typography>
             <Typography variant="body1">
-              <ul>
+              <List>
                 {config.views &&
                   config.views.map((view, index) => {
                     return (
-                      <li key={index}>
+                      <ListItem key={index}>
+                        <ListItemIcon><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
                         <Link
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
@@ -102,7 +108,7 @@ export default () => {
                         >
                           {view.title}
                         </Link>
-                      </li>
+                      </ListItem>
                     );
                   })}
                 {config &&
@@ -110,18 +116,19 @@ export default () => {
                   config.externalViews &&
                   config.externalViews.map((view, index) => {
                     return (
-                      <li key={index}>
-                        <Link
+                      <ListItem key={index}>
+                        <ListItemIcon><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
+                         <Link
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
                           {view.title}
                         </Link>
-                      </li>
+                      </ListItem>
                     );
                   })}
-              </ul>
+              </List>
               <Typography variant="caption">
                 On external devices navigate to<b>{" "}
                 {`http://${config.ip}${
@@ -137,13 +144,10 @@ export default () => {
           </>
           )}
      
-        {/* <Grid item xs={12} container direction="row" justify="flex-end" alignItems="center">
-          <Grid item>
-            <Typography variant="h5"><i>arrivederci a presto, baciotti.</i></Typography>
-          </Grid>
-        </Grid>      */}
+         
 
       </Grid>
+
     </Container>
   );
 };
