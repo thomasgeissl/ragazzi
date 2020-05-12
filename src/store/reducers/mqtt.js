@@ -15,7 +15,7 @@ const defaultState = {
   sentMessages: [],
   host: "localhost",
   port: 9001,
-  subscriptions: new Map([["$SYS/#", false]]),
+  subscriptions: new Map([]),
 };
 const setBroker = (host, port) => {
   return {
@@ -154,6 +154,10 @@ export default (state = defaultState, action) => {
   }
 };
 
+const isSubscribtionListShown = (state) => {
+  return state.mqtt.subscriptions.size > 0
+};
+
 export { types };
 export {
   setBroker,
@@ -164,4 +168,5 @@ export {
   subscribe,
   unsubscribe,
   unsubscribeAll,
+  isSubscribtionListShown
 };

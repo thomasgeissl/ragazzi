@@ -1,21 +1,57 @@
 import React from "react";
-import styled from "styled-components";
+import { useSelector } from "react-redux";
 
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from "@material-ui/core/Grid";
+import Container from '@material-ui/core/Container';
 import Header from "./Header";
-import Status from "./Status";
 import Broker from "./Broker";
 import Publisher from "./Publisher";
 import Subscriber from "./Subscriber";
+import Logger from "./Logger";
+import Subscriptions from "./Subscriptions";
+import { isSubscribtionListShown } from "../store/reducers/mqtt"
 
-const Container = styled.div``;
+const useStyles = makeStyles({
+  container: {
+    marginTop: "0px",
+    paddingTop: "20px"
+  },
+  gap: {
+    marginTop: "16px"
+  }
+});
+
+
 export default () => {
+
+  const subscriptions = useSelector(isSubscribtionListShown);
+  const messages = useSelector((state) => state.mqtt.receivedMessages.length > 0);
+
+  const classes = useStyles();
+
   return (
-    <Container>
-      <Header></Header>
-      <Status></Status>
-      <Broker></Broker>
-      <Publisher></Publisher>
-      <Subscriber></Subscriber>
+    <Container className={classes.container}>
+      <Grid container spacing={2}>
+      <Grid item xs={12}><Header></Header></Grid>
+      <Grid item xs={12}><Broker></Broker></Grid>
+      <Grid container item xs={4} direction="column" alignItems="stretch"  justify="flex-start">
+        <Grid item>
+          <Subscriber></Subscriber>
+        </Grid>
+        <Grid item className={classes.gap}>
+          {subscriptions && <Subscriptions></Subscriptions>}
+        </Grid>
+      </Grid>
+      <Grid container item xs={8} direction="column" alignItems="stretch"  justify="flex-start">
+        <Grid item>
+          <Publisher></Publisher>
+          </Grid>
+        <Grid item className={classes.gap}></Grid>
+          {messages && <Logger></Logger>}
+        </Grid>
+        
+        </Grid>
     </Container>
   );
 };
