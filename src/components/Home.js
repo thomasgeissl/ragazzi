@@ -27,6 +27,9 @@ const useStyles = makeStyles({
   },
   status: {
     maxHeight: '24px'
+  },
+  icon: {
+    minWidth: '36px'
   }
 });
 
@@ -103,7 +106,7 @@ export default () => {
                   config.views.map((view, index) => {
                     return (
                       <ListItem key={index}>
-                        <ListItemIcon><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
+                        <ListItemIcon className={classes.icon}><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
                         <Link
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
@@ -120,7 +123,7 @@ export default () => {
                   config.externalViews.map((view, index) => {
                     return (
                       <ListItem key={index}>
-                        <ListItemIcon><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
+                        <ListItemIcon  className={classes.icon}><DesktopWindowsIcon></DesktopWindowsIcon></ListItemIcon>
                          <Link
                           href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
                           target="_blank"
