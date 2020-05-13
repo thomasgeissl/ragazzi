@@ -2,6 +2,7 @@ import React from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
+import IXDSLogo from './IXDSLogo'
 
 const useStyles = makeStyles({
     green: {
@@ -20,9 +21,10 @@ export default () => {
     const classes = useStyles();
     return (
     <Grid item container>
-
-        <Grid item xs={12} container alignItems="flex-end" justify="flex-end" direction="row">
-            <Grid item><Typography variant="caption" color="textSecondary"><i>arrivederci a presto, baciotti.</i></Typography></Grid>
+         
+        <Grid item xs={12} container alignItems="flex-end" justify="space-between" direction="row" spacing={1}>
+        <Grid item><Typography variant="caption" color="textSecondary"><IXDSLogo></IXDSLogo></Typography></Grid>
+        <Grid item><Typography variant="caption" color="textSecondary"><i>arrivederci a presto, baciotti.</i></Typography></Grid>
         </Grid>    
         <Grid item xs={4} className={classes.green}></Grid>
         <Grid item xs={4} className={classes.white}></Grid>
