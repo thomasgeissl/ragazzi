@@ -24,6 +24,9 @@ const useStyles = makeStyles({
   h1: 
   {
     marginTop: '20px'
+  },
+  status: {
+    maxHeight: '24px'
   }
 });
 
@@ -83,7 +86,7 @@ export default () => {
             <>
             <Grid item xs={6}>
             <Card><CardContent>
-              <Grid container spacing={1}>
+            <Grid container spacing={1} className={classes.status}>
                  <Grid item><Box color="success.main"><CheckIcon></CheckIcon></Box></Grid>
                  <Grid item><Typography><Box color="success.main">project is hosted</Box></Typography></Grid>
              </Grid>
