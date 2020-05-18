@@ -99,7 +99,7 @@ export default (state = defaultState, action) => {
     }
     case types.ADDRECEIVEDMESSAGE: {
       let receivedMessages = [...state.receivedMessages];
-      receivedMessages.unshift({ ...action.payload });
+      receivedMessages.unshift({ ...action.payload, timestamp: new Date() });
       receivedMessages.slice(0, 99);
       return {
         ...state,
@@ -108,7 +108,7 @@ export default (state = defaultState, action) => {
     }
     case types.ADDSENTMESSAGE: {
       let sentMessages = [...state.sentMessages];
-      sentMessages.unshift({ ...action.payload });
+      sentMessages.unshift({ ...action.payload, timestamp: new Date() });
       sentMessages.slice(0, 99);
       return {
         ...state,
@@ -155,7 +155,7 @@ export default (state = defaultState, action) => {
 };
 
 const isSubscribtionListShown = (state) => {
-  return state.mqtt.subscriptions.size > 0
+  return state.mqtt.subscriptions.size > 0;
 };
 
 export { types };
@@ -168,5 +168,5 @@ export {
   subscribe,
   unsubscribe,
   unsubscribeAll,
-  isSubscribtionListShown
+  isSubscribtionListShown,
 };

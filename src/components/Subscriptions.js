@@ -1,22 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Card from "@material-ui/core/Card";
-import CardContent from '@material-ui/core/CardContent';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
+import CardContent from "@material-ui/core/CardContent";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import Typography from "@material-ui/core/Typography";
 import { getClient } from "../mqtt";
 
-import {
-  subscribe,
-  unsubscribe,
-} from "../store/reducers/mqtt";
+import { subscribe, unsubscribe } from "../store/reducers/mqtt";
 
 export default () => {
-
   const subscriptions = useSelector((state) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
 
@@ -32,33 +28,32 @@ export default () => {
     };
   };
   return (
-
-      <Card>
+    <Card>
       <CardContent>
-      <Typography color="textPrimary" gutterBottom><b>Subscribtions</b></Typography>
+        <Typography color="textPrimary" gutterBottom>
+          <b>Subscriptions</b>
+        </Typography>
 
         <List dense>
-      {[...subscriptions.keys()].map((key, index) => {
-        return (
-          <ListItem>
-          <FormControlLabel
-            key={index}
-            control={
-              <Checkbox
-                checked={subscriptions.get(key)}
-                onChange={(event) => toggleSubscription(key)()}
-                name={key}
-                color="primary"
-              />
-            }
-            label={key}
-          />
-          </ListItem>
-        );
-      })}
-      </List>
+          {[...subscriptions.keys()].map((key, index) => {
+            return (
+              <ListItem key={index}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={subscriptions.get(key)}
+                      onChange={(event) => toggleSubscription(key)()}
+                      name={key}
+                      color="primary"
+                    />
+                  }
+                  label={key}
+                />
+              </ListItem>
+            );
+          })}
+        </List>
       </CardContent>
-      </Card>
-
+    </Card>
   );
 };

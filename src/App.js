@@ -7,12 +7,9 @@ import Home from "./components/Home";
 import Dev from "./components/Dev";
 import Footer from "./components/Footer";
 
-import { makeStyles } from '@material-ui/core/styles';
-import { createMuiTheme } from '@material-ui/core/styles';
-import { ThemeProvider } from '@material-ui/core/styles'
-import { green, orange } from '@material-ui/core/colors';
-
-import Grid from '@material-ui/core/Grid';
+import { createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/core/styles";
+import { green } from "@material-ui/core/colors";
 
 import store from "./store";
 import mqtt from "mqtt";
@@ -30,33 +27,15 @@ client.on("message", (topic, message) => {
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: '#CE2B37'
+      main: "#CE2B37",
     },
     secondary: {
-      main: '#ffffff'
+      main: "#ffffff",
     },
     success: {
-      main: '#009246'
-    }
-  }
-});
-
-const useStyles = makeStyles({
-  app: {
-    width: '100vw',
-    height: '100vh',
-    padding: '0px',
-    margin: '0px',
-    outline: 'none',
-    backgroundColor: '#eeeeee'
+      main: "#009246",
+    },
   },
-  dropzone: {
-    width: '100vw',
-    height: '100vh',
-    outline: 'none',
-    padding: '0px',
-    margin: '0px'
-  }
 });
 
 function App() {
@@ -73,29 +52,25 @@ function App() {
     }
   }, []);
   const { getRootProps } = useDropzone({ onDrop });
-  const classes = useStyles();
-  
+
   return (
     <ThemeProvider theme={theme}>
-        <Grid className={classes.app} container direction="column" justify="space-between" alignItems="center">
-          <Grid item className={green.dropzone} {...getRootProps()}>
-              <Provider store={store}>
-                <Router>
-                  <Switch>
-                    <Route path="/dev">
-                      <Dev />
-                    </Route>
-                    <Route path="/">
-                      <Home />
-                    </Route>
-                  </Switch>
-                </Router>
-              </Provider>
-            </Grid>
-            <Footer item></Footer>
-          </Grid>
+      <div className={green.dropzone} {...getRootProps()}>
+        <Provider store={store}>
+          <Router>
+            <Switch>
+              <Route path="/dev">
+                <Dev />
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </Router>
+        </Provider>
+      </div>
+      <Footer item></Footer>
     </ThemeProvider>
-
   );
 }
 
