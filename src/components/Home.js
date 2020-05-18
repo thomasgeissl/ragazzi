@@ -15,6 +15,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import DesktopWindowsIcon from "@material-ui/icons/DesktopWindows";
+import PhoneAndroidIcon from "@material-ui/icons/PhoneAndroid";
 
 import client from "../mqtt";
 
@@ -116,7 +117,7 @@ export default () => {
                                   <DesktopWindowsIcon></DesktopWindowsIcon>
                                 </ListItemIcon>
                                 <Link
-                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
+                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -132,10 +133,10 @@ export default () => {
                             return (
                               <ListItem key={index}>
                                 <ListItemIcon className={classes.icon}>
-                                  <DesktopWindowsIcon></DesktopWindowsIcon>
+                                  <PhoneAndroidIcon></PhoneAndroidIcon>
                                 </ListItemIcon>
                                 <Link
-                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}`}
+                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
