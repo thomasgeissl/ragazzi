@@ -39,7 +39,7 @@ export default () => {
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           onKeyPress={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleClick(topic, message);
             }

@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { format } from "date-fns";
+import compare from "date-fns/compareDesc";
 
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -11,13 +12,20 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 
 export default () => {
-  const messages = useSelector((state) => state.mqtt.receivedMessages);
+  const receivedMessages = useSelector((state) => state.mqtt.receivedMessages);
+  const sentMessages = useSelector((state) => state.mqtt.sentMessages);
+  const messages = [...receivedMessages, ...sentMessages].sort((a, b) => {
+    return compare(a.timestamp, b.timestamp);
+  });
 
   return (
     <TableContainer component={Paper}>
       <Table size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
+            <TableCell>
+              <b>Direction</b>
+            </TableCell>
             <TableCell>
               <b>Topic</b>
             </TableCell>
@@ -33,6 +41,7 @@ export default () => {
           {messages.map((message, index) => {
             return (
               <TableRow key={index}>
+                <TableCell>{message.type}</TableCell>
                 <TableCell>{message.topic}</TableCell>
                 <TableCell>{message.message}</TableCell>
                 <TableCell>{format(message.timestamp, "HH:mm:ss")}</TableCell>

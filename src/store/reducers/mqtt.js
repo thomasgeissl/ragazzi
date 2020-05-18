@@ -99,8 +99,12 @@ export default (state = defaultState, action) => {
     }
     case types.ADDRECEIVEDMESSAGE: {
       let receivedMessages = [...state.receivedMessages];
-      receivedMessages.unshift({ ...action.payload, timestamp: new Date() });
-      receivedMessages.slice(0, 99);
+      receivedMessages.unshift({
+        ...action.payload,
+        timestamp: new Date(),
+        type: "INCOMING",
+      });
+      receivedMessages = receivedMessages.slice(0, 99);
       return {
         ...state,
         receivedMessages,
@@ -108,8 +112,12 @@ export default (state = defaultState, action) => {
     }
     case types.ADDSENTMESSAGE: {
       let sentMessages = [...state.sentMessages];
-      sentMessages.unshift({ ...action.payload, timestamp: new Date() });
-      sentMessages.slice(0, 99);
+      sentMessages.unshift({
+        ...action.payload,
+        timestamp: new Date(),
+        type: "OUTGOING",
+      });
+      sentMessages = sentMessages.slice(0, 99);
       return {
         ...state,
         sentMessages,

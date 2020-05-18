@@ -7,8 +7,8 @@ import IXDSLogo from "./IXDSLogo";
 import styled from "styled-components";
 
 const Container = styled.footer`
-  position: fixed;
-  bottom: 0;
+  /* position: fixed;
+  bottom: 0; */
   width: 100%;
 `;
 
