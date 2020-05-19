@@ -38,7 +38,7 @@
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
     "preelectron-dist": "yarn build && cp ./public/entitlements.mac.plist ./build",
-    "electron-dist": "electron-builder -m"
+    "electron-dist": "electron-builder -mwl"
   },
   "eslintConfig": {
     "extends": "react-app"
