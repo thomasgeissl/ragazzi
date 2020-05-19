@@ -8,7 +8,7 @@ import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
-import Link from "@material-ui/core/Link";
+import { Link } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import CheckIcon from "@material-ui/icons/Check";
 import List from "@material-ui/core/List";
@@ -57,7 +57,7 @@ export default () => {
                 It communicates on ports <b>9001</b> (ws) and <b>1883</b> (tcp).
                 <br />
                 For monitoring and debugging, the{" "}
-                <Link href="/dev">mqtt dev tools</Link> might be useful.
+                <Link to="/dev">mqtt dev tools</Link> might be useful.
               </Typography>
             </CardContent>
           </Card>
@@ -116,13 +116,13 @@ export default () => {
                                 <ListItemIcon className={classes.icon}>
                                   <DesktopWindowsIcon></DesktopWindowsIcon>
                                 </ListItemIcon>
-                                <Link
+                                <a
                                   href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
                                   {view.title}
-                                </Link>
+                                </a>
                               </ListItem>
                             );
                           })}
@@ -135,13 +135,13 @@ export default () => {
                                 <ListItemIcon className={classes.icon}>
                                   <PhoneAndroidIcon></PhoneAndroidIcon>
                                 </ListItemIcon>
-                                <Link
+                                <a
                                   href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
                                   {view.title}
-                                </Link>
+                                </a>
                               </ListItem>
                             );
                           })}
