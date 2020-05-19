@@ -191,9 +191,6 @@ const addWindow = (url, opts) => {
   opts = opts ? opts : {};
   let win = new BrowserWindow({
     ...opts,
-    webPreferences: {
-      webSecurity: false,
-    },
   });
   win.loadURL(url);
   windows.push(win);
@@ -357,9 +354,6 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 640,
     height: 768,
-    webPreferences: {
-      nodeIntegration: true,
-    },
   });
 
   // and load the index.html of the app.
