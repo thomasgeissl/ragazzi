@@ -1,13 +1,13 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import Checkbox from "@material-ui/core/Checkbox";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Typography from "@material-ui/core/Typography";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import Typography from "@mui/material/Typography";
 import { getClient } from "../mqtt";
 
 import { subscribe, unsubscribe } from "../store/reducers/mqtt";

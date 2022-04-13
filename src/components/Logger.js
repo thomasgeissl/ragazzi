@@ -4,15 +4,15 @@ import { format } from "date-fns";
 import compare from "date-fns/compareDesc";
 import styled from "styled-components";
 
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
-import CallReceivedIcon from "@material-ui/icons/CallReceived";
-import SendIcon from "@material-ui/icons/Send";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import CallReceivedIcon from "@mui/icons-material/CallReceived";
+import SendIcon from "@mui/icons-material/Send";
 
 const StyledTable = styled(Table)`
   overflow-wrap: break-word;

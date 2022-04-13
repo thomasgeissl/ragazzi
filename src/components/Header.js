@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 // import styled from "styled-components";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import Box from "@material-ui/core/Box";
-import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
 
 // const Container = styled.div`
 //   padding-top: 15px;
