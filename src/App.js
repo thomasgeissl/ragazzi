@@ -3,17 +3,17 @@ import { useDropzone } from "react-dropzone";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import styled from "styled-components";
+import mqtt from "mqtt";
 
 import Home from "./components/Home";
 import Dev from "./components/Dev";
 import Footer from "./components/Footer";
 
-import Box from "@material-ui/core/Box";
-import { createMuiTheme } from "@material-ui/core/styles";
-import { ThemeProvider } from "@material-ui/core/styles";
+import Box from "@mui/material/Box";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./theme"
 
 import store from "./store";
-import mqtt from "mqtt";
 
 const client = mqtt.connect("ws://localhost:9001");
 
@@ -25,19 +25,7 @@ client.on("message", (topic, message) => {
   }
 });
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#CE2B37",
-    },
-    secondary: {
-      main: "#ffffff",
-    },
-    success: {
-      main: "#009246",
-    },
-  },
-});
+
 
 const Container = styled.div`
   width: 100vw;

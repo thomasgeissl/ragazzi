@@ -2,8 +2,8 @@ import React from "react";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 
-import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
-import ErrorIcon from "@material-ui/icons/Error";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorIcon from "@mui/icons-material/Error";
 
 import { getClient } from "../mqtt";
 

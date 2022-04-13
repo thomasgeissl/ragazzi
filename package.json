@@ -6,8 +6,11 @@
   "homepage": "./",
   "license": "MIT",
   "dependencies": {
-    "@material-ui/core": "^4.9.9",
-    "@material-ui/icons": "^4.9.1",
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
+    "@mui/icons-material": "^5.6.1",
+    "@mui/material": "^5.6.1",
+    "@mui/styles": "^5.6.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -15,12 +18,13 @@
     "aedes-stats": "^3.0.0",
     "date-fns": "^2.13.0",
     "dotenv": "^8.2.0",
+    "electron": "^18.0.3",
     "electron-is-dev": "^1.1.0",
     "electron-notarize": "^0.3.0",
     "mqtt": "^3.0.0",
     "portscanner": "^2.2.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "react-dropzone": "^10.2.2",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
@@ -28,11 +32,12 @@
     "redux": "^4.0.5",
     "redux-observable": "^1.2.0",
     "rxjs": "^6.5.5",
-    "styled-components": "^5.0.1"
+    "styled-components": "^5.0.1",
+    "zustand": "^3.7.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "react-scripts --openssl-legacy-provider start",
+    "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postinstall": "electron-builder install-app-deps",
@@ -57,14 +62,13 @@
   },
   "devDependencies": {
     "concurrently": "^5.1.0",
-    "electron": "^8.2.0",
     "electron-builder": "^22.4.1",
     "wait-on": "^4.0.1"
   },
   "build": {
-    "appId": "com.ixds.ragazzi",
+    "appId": "com.thomasgeissl.ragazzi",
     "productName": "ragazzi",
-    "copyright": "Copyright © 2020",
+    "copyright": "Copyright © 2022",
     "mac": {
       "target": "dmg",
       "category": "public.app-category.developer-tools",
