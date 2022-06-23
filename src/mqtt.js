@@ -12,11 +12,13 @@ const getClient = () => {
   return secondClient ? secondClient : client;
 };
 
-const connect = (host, port) => {
+const connect = (protocol, host, port) => {
   if (secondClient) {
     secondClient.end();
   }
-  secondClient = mqtt.connect(`ws://${host}:${port}`);
+  // const parts = host.split("://");
+  // const protocol = parts.length > 1 ? parts[0] : "ws";
+  secondClient = mqtt.connect(`${protocol}://${host}:${port}`);
   secondClient.on("message", function (topic, message) {
     store.dispatch(addReceivedMessage(topic, message.toString()));
   });

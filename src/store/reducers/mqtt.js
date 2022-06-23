@@ -13,14 +13,16 @@ const defaultState = {
   connected: false,
   receivedMessages: [],
   sentMessages: [],
+  protocol: "ws",
   host: "localhost",
   port: 9001,
   subscriptions: new Map([]),
 };
-const setBroker = (host, port) => {
+const setBroker = (protocol, host, port) => {
   return {
     type: types.SETBROKER,
     payload: {
+      protocol,
       host,
       port,
     },
@@ -87,6 +89,7 @@ export default (state = defaultState, action) => {
     case types.SETBROKER: {
       return {
         ...state,
+        protocol: action.payload.protocol,
         host: action.payload.host,
         port: action.payload.port,
       };

@@ -39,21 +39,23 @@ const useStyles = makeStyles({
 });
 
 export default () => {
+  const [protocol, setProtocol] = useState("ws");
   const [host, setHost] = useState("localhost");
   const [port, setPort] = useState(9001);
   const connected = useSelector((state) => state.mqtt.connected);
+  const connectedProtocol = useSelector((state) => state.mqtt.protocol);
   const connectedHost = useSelector((state) => state.mqtt.host);
   const connectedPort = useSelector((state) => state.mqtt.port);
   const subscriptions = useSelector((state) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
   const [expanded, setExpanded] = React.useState(false);
-  function handleClick(host, port) {
+  function handleClick(protocol, host, port) {
     [...subscriptions.keys()].forEach((key) => {
       getClient().unsubscribe(key);
     });
     dispatch(unsubscribeAll());
-    dispatch(setBroker(host, port));
-    connect(host, port);
+    dispatch(setBroker(protocol, host, port));
+    connect(protocol, host, port);
   }
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -124,8 +126,16 @@ export default () => {
             justify="space-between"
             alignItems="center"
           >
-            <Grid item container spacing={3} xs={8}>
-              <Grid item xs={10}>
+            <Grid item container spacing={3} xs={9}>
+              <Grid item xs={2}>
+                <TextField
+                  fullWidth
+                  label="protocol"
+                  value={protocol}
+                  onChange={(event) => setProtocol(event.target.value)}
+                />
+              </Grid>
+              <Grid item xs={7}>
                 <TextField
                   fullWidth
                   label="host"
@@ -133,7 +143,7 @@ export default () => {
                   onChange={(event) => setHost(event.target.value)}
                 />
               </Grid>
-              <Grid item xs={2}>
+              <Grid item xs={3}>
                 <TextField
                   fullWidth
                   label="port"
@@ -148,10 +158,13 @@ export default () => {
               {connected && <CheckIcon></CheckIcon>}
               {!connected && <BlockIcon></BlockIcon>}
             </Grid> */}
-            <Grid item>
+            <Grid item xs={3}>
               <Button
                 disabled={
-                  connected && host === connectedHost && port === connectedPort
+                  connected &&
+                  protocol === connectedProtocol &&
+                  host === connectedHost &&
+                  port === connectedPort
                     ? true
                     : false
                 }
@@ -159,7 +172,7 @@ export default () => {
                 color="primary"
                 type="button"
                 justify="right"
-                onClick={() => handleClick(host, port)}
+                onClick={() => handleClick(protocol, host, port)}
               >
                 connect
               </Button>
