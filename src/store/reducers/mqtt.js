@@ -89,8 +89,8 @@ export default (state = defaultState, action) => {
     case types.SETBROKER: {
       return {
         ...state,
-        protocol: action.payload.protocol,
-        host: action.payload.host,
+        protocol: action.payload.protocol.trim(),
+        host: action.payload.host.trim(),
         port: action.payload.port,
       };
     }
