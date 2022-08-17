@@ -4,13 +4,13 @@ import { useSelector } from "react-redux";
 import { makeStyles } from "@mui/styles";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
-import Header from "./Header";
+// import Header from "./Header";
 import Broker from "./Broker";
 import Publisher from "./Publisher";
 import Subscriber from "./Subscriber";
 import Logger from "./Logger";
 import Subscriptions from "./Subscriptions";
-import { isSubscribtionListShown } from "../store/reducers/mqtt";
+import { isSubscriptionListShown } from "../store/reducers/mqtt";
 
 const useStyles = makeStyles({
   container: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles({
 });
 
 export default () => {
-  const subscriptions = useSelector(isSubscribtionListShown);
+  const subscriptions = useSelector(isSubscriptionListShown);
   const messages = useSelector((state) => {
     return (
       state.mqtt.receivedMessages.length > 0 ||
@@ -36,9 +36,9 @@ export default () => {
   return (
     <Container className={classes.container}>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Header></Header>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12}>
           <Broker></Broker>
         </Grid>
@@ -64,13 +64,17 @@ export default () => {
           direction="column"
           alignItems="stretch"
           justify="flex-start"
+          spacing={2}
         >
           <Grid item>
             <Publisher></Publisher>
           </Grid>
-          <Grid item className={classes.gap}></Grid>
-          {messages && <Logger></Logger>}
         </Grid>
+        {messages && (
+          <Grid item xs={12}>
+            <Logger></Logger>
+          </Grid>
+        )}
       </Grid>
     </Container>
   );

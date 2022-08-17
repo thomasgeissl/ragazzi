@@ -29,11 +29,13 @@ export default () => {
         <TextField
           fullWidth
           label="topic"
+          size="small"
           value={topic}
           onChange={(event) => setTopic(event.target.value)}
         />
         <TextField
           fullWidth
+          size="small"
           multiline
           label="message"
           value={message}

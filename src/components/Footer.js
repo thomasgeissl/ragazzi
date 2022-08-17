@@ -4,12 +4,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 
 import styled from "styled-components";
-
-const Container = styled.footer`
-  /* position: fixed;
-  bottom: 0; */
-  width: 100%;
-`;
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles({
   green: {
@@ -21,11 +16,21 @@ const useStyles = makeStyles({
   },
   red: {
     backgroundColor: "#CE2B37",
+    color: "white",
+    textAlign: "right",
+    paddingRight: "8px",
   },
 });
 
 export default () => {
+  const version = useSelector((state) => state.system.version);
   const classes = useStyles();
+
+  const Container = styled.footer`
+    /* position: fixed;
+  bottom: 0; */
+    width: 100%;
+  `;
   return (
     <Container>
       <Grid container>
@@ -39,8 +44,7 @@ export default () => {
           spacing={1}
         >
           <Grid item>
-            <Typography variant="caption" color="textSecondary">
-            </Typography>
+            <Typography variant="caption" color="textSecondary"></Typography>
           </Grid>
           <Grid item>
             <Typography variant="caption" color="textSecondary">
@@ -50,7 +54,9 @@ export default () => {
         </Grid>
         <Grid item xs={4} className={classes.green}></Grid>
         <Grid item xs={4} className={classes.white}></Grid>
-        <Grid item xs={4} className={classes.red}></Grid>
+        <Grid item xs={4} className={classes.red}>
+          v{version}
+        </Grid>
       </Grid>
     </Container>
   );

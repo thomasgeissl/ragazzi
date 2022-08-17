@@ -14,6 +14,7 @@ import Typography from "@mui/material/Typography";
 import CheckIcon from "@mui/icons-material/Check";
 import BlockIcon from "@mui/icons-material/Block";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Divider from "@mui/material/Divider";
 
 import { setBroker, unsubscribeAll } from "../store/reducers/mqtt";
@@ -29,12 +30,6 @@ setInterval(() => {
 const useStyles = makeStyles({
   card: {
     padding: "16px",
-  },
-  arrowDefault: {
-    transform: "rotate(0deg)",
-  },
-  arrowExpanded: {
-    transform: "rotate(180deg)",
   },
 });
 
@@ -102,16 +97,13 @@ export default () => {
           justify="space-between"
           alignItems="center"
         >
-          <Grid item>
+          <Grid item flexGrow={1}>
             <Status></Status>
           </Grid>
           <Grid item onClick={handleExpandClick}>
             <Typography>
-              <ExpandMoreIcon
-                className={
-                  expanded ? classes.arrowExpanded : classes.arrowDefault
-                }
-              ></ExpandMoreIcon>
+              {expanded && <ExpandLessIcon></ExpandLessIcon>}
+              {!expanded && <ExpandMoreIcon></ExpandMoreIcon>}
             </Typography>
           </Grid>
         </Grid>
@@ -130,6 +122,7 @@ export default () => {
               <Grid item xs={2}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="protocol"
                   value={protocol}
                   onChange={(event) => setProtocol(event.target.value)}
@@ -138,6 +131,7 @@ export default () => {
               <Grid item xs={7}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="host"
                   value={host}
                   onChange={(event) => setHost(event.target.value)}
@@ -146,20 +140,16 @@ export default () => {
               <Grid item xs={3}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="port"
                   value={port}
                   onChange={(event) => setPort(event.target.value)}
                 />
               </Grid>
             </Grid>
-            {/* <Grid item xs={2}>
-            <Typography color="textSecondary" variant="caption">status</Typography>
-            <br/>
-              {connected && <CheckIcon></CheckIcon>}
-              {!connected && <BlockIcon></BlockIcon>}
-            </Grid> */}
             <Grid item xs={3}>
               <Button
+                fullWidth
                 disabled={
                   connected &&
                   protocol === connectedProtocol &&
@@ -179,22 +169,6 @@ export default () => {
             </Grid>
           </Grid>
         </CardContent>
-        {/* <CardActions>
-          <Button
-              disabled={
-                connected && host === connectedHost && port === connectedPort
-                  ? true
-                  : false
-              }
-              variant="contained"
-              color="primary"
-              type="button"
-              justify="right"
-              onClick={() => handleClick(host, port)}
-            >
-              connect
-            </Button>
-        </CardActions> */}
       </Collapse>
     </Card>
   );

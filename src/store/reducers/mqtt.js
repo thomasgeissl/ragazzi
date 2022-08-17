@@ -7,6 +7,7 @@ const types = {
   UNSUBSCRIBE: "UNSUBSCRIBE",
   UNSUBSCRIBEALL: "UNSUBSCRIBEALL",
   SETBROKER: "SETBROKER",
+  CLEARMESSAGES: "CLEARMESSAGES",
 };
 
 const defaultState = {
@@ -81,6 +82,11 @@ const unsubscribe = (value) => {
 const unsubscribeAll = () => {
   return {
     type: types.UNSUBSCRIBEALL,
+  };
+};
+const clearMessages = () => {
+  return {
+    type: types.CLEARMESSAGES,
   };
 };
 
@@ -160,12 +166,19 @@ export default (state = defaultState, action) => {
         subscriptions,
       };
     }
+    case types.CLEARMESSAGES: {
+      return {
+        ...state,
+        sentMessages: [],
+        receivedMessages: [],
+      };
+    }
     default:
       return state;
   }
 };
 
-const isSubscribtionListShown = (state) => {
+const isSubscriptionListShown = (state) => {
   return state.mqtt.subscriptions.size > 0;
 };
 
@@ -179,5 +192,6 @@ export {
   subscribe,
   unsubscribe,
   unsubscribeAll,
-  isSubscribtionListShown,
+  isSubscriptionListShown,
+  clearMessages,
 };
