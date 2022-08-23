@@ -17,6 +17,8 @@ import SendIcon from "@mui/icons-material/Send";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
+import store from "../store/index";
+import { clearMessages } from "../store/reducers/mqtt";
 
 const Container = styled(Card)`
   overflow: scroll;
@@ -28,7 +30,6 @@ const StyledTable = styled(Table)`
 export default () => {
   const receivedMessages = useSelector((state) => state.mqtt.receivedMessages);
   const sentMessages = useSelector((state) => state.mqtt.sentMessages);
-  const clearMessages = useSelector((state) => state.mqtt.clearMessages);
   const messages = [...receivedMessages, ...sentMessages].sort((a, b) => {
     return compare(a.timestamp, b.timestamp);
   });
@@ -52,7 +53,7 @@ export default () => {
               fullWidth
               variant="contained"
               type="button"
-              onClick={() => clearMessages()}
+              onClick={() => store.dispatch(clearMessages())}
             >
               clear
             </Button>
