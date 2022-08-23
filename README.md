@@ -6,8 +6,6 @@ ragazzi is a mqtt broker bundled as an electron app. it is equipped with a webse
 
 The broker will listen on ports 9001 (ws) and 1883 (tcp).
 
-This is still a work in progess.
-
 ## Screenshots
 ![dev tools](./docs/devtools.png)
 ![hosting](./docs/hosting.png)
@@ -20,8 +18,8 @@ On osx it can be installed via brew.
 brew tap thomasgeissl/tools
 brew install --cask ragazzi
 ```
-## Dev
+## Development
 
 - yarn install
 - yarn electron-dev
-- yarn electron-dist
+- yarn electron-build

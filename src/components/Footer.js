@@ -1,36 +1,33 @@
 import React from "react";
-import { makeStyles } from "@mui/styles";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 
-const useStyles = makeStyles({
-  green: {
-    backgroundColor: "#009246",
-    minHeight: "16px",
-  },
-  white: {
-    backgroundColor: "#ffffff",
-  },
-  red: {
-    backgroundColor: "#CE2B37",
-    color: "white",
-    textAlign: "right",
-    paddingRight: "8px",
-  },
-});
+const Container = styled.footer`
+  /* position: fixed;
+bottom: 0; */
+  width: 100%;
+`;
+
+const Left = styled(Grid)`
+  background-color: #009246;
+  min-height: 16px;
+`;
+const Center = styled(Grid)`
+  background-color: #ffffff;
+`;
+const Right = styled(Grid)`
+  background-color: #ce2b37;
+  color: white;
+  text-align: right;
+  padding-right: 8px;
+`;
 
 export default () => {
   const version = useSelector((state) => state.system.version);
-  const classes = useStyles();
 
-  const Container = styled.footer`
-    /* position: fixed;
-  bottom: 0; */
-    width: 100%;
-  `;
   return (
     <Container>
       <Grid container>
@@ -52,11 +49,11 @@ export default () => {
             </Typography>
           </Grid>
         </Grid>
-        <Grid item xs={4} className={classes.green}></Grid>
-        <Grid item xs={4} className={classes.white}></Grid>
-        <Grid item xs={4} className={classes.red}>
+        <Left item xs={4}></Left>
+        <Center item xs={4}></Center>
+        <Right item xs={4}>
           v{version}
-        </Grid>
+        </Right>
       </Grid>
     </Container>
   );

@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Provider as StoreProvider } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import mqtt from "mqtt";
 
 import Home from "./components/Home";
@@ -24,16 +24,18 @@ client.on("message", (topic, message) => {
   }
 });
 
+const Container = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+const Content = styled.div`
+  flex-grow: 1;
+  overflow: scroll;
+`;
+
 export default () => {
-  const Container = styled.div`
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  `;
-  const Content = styled.div`
-    flex-grow: 1;
-  `;
   const onDrop = useCallback((acceptedFiles) => {
     const regex = /(?:\.([^.]+))?$/;
     const ext = regex.exec(acceptedFiles[0].path);

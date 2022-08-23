@@ -30,7 +30,6 @@
     "redux": "^4.0.5",
     "redux-observable": "^1.2.0",
     "rxjs": "^6.5.5",
-    "styled-components": "^5.0.1",
     "zustand": "^3.7.2"
   },
   "scripts": {
@@ -40,8 +39,8 @@
     "eject": "react-scripts eject",
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
-    "preelectron-dist": "yarn build && cp ./public/entitlements.mac.plist ./build",
-    "electron-dist": "electron-builder -m"
+    "preelectron-build": "yarn build && cp ./public/entitlements.mac.plist ./build",
+    "electron-build": "electron-builder -m"
   },
   "eslintConfig": {
     "extends": "react-app"

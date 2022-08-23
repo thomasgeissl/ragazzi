@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorIcon from "@mui/icons-material/Error";

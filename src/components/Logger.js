@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { format } from "date-fns";
 import compare from "date-fns/compareDesc";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import Card from "@mui/material/Card";
 import Table from "@mui/material/Table";
@@ -18,6 +18,13 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 
+const Container = styled(Card)`
+  overflow: scroll;
+`;
+const StyledTable = styled(Table)`
+  overflow-wrap: break-word;
+`;
+
 export default () => {
   const receivedMessages = useSelector((state) => state.mqtt.receivedMessages);
   const sentMessages = useSelector((state) => state.mqtt.sentMessages);
@@ -27,12 +34,8 @@ export default () => {
   });
   const [topicFilter, setTopicFilter] = useState("");
 
-  const StyledTable = styled(Table)`
-    overflow-wrap: break-word;
-  `;
-
   return (
-    <Card>
+    <Container>
       <TableContainer component={Paper}>
         <Grid container spacing={2}>
           <Grid item xs={10}>
@@ -98,6 +101,6 @@ export default () => {
           </TableBody>
         </StyledTable>
       </TableContainer>
-    </Card>
+    </Container>
   );
 };
