@@ -52,9 +52,9 @@ export default () => {
   return (
     <StoreProvider store={store}>
       <ThemeProvider theme={theme}>
-        <Container {...getRootProps()}>
-          <Content>
-            <Router>
+        <Router>
+          <Container {...getRootProps()}>
+            <Content>
               <Switch>
                 <Route path="/dev">
                   <Dev />
@@ -63,10 +63,10 @@ export default () => {
                   <Home />
                 </Route>
               </Switch>
-            </Router>
-          </Content>
-          <Footer></Footer>
-        </Container>
+            </Content>
+            <Footer></Footer>
+          </Container>
+        </Router>
       </ThemeProvider>
     </StoreProvider>
   );

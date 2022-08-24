@@ -1,6 +1,6 @@
 {
   "name": "ragazzi",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "main": "public/electron.js",
   "homepage": "./",
@@ -40,7 +40,7 @@
     "postinstall": "electron-builder install-app-deps",
     "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
     "preelectron-build": "yarn build && cp ./public/entitlements.mac.plist ./build",
-    "electron-build": "electron-builder -m"
+    "electron-build": "electron-builder -wl"
   },
   "eslintConfig": {
     "extends": "react-app"

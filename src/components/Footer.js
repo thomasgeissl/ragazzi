@@ -1,9 +1,11 @@
 import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const Container = styled.footer`
   /* position: fixed;
@@ -13,6 +15,10 @@ bottom: 0; */
 
 const Left = styled(Grid)`
   background-color: #009246;
+  padding-left: 8px;
+  a {
+    color: white;
+  }
   min-height: 16px;
 `;
 const Center = styled(Grid)`
@@ -27,6 +33,7 @@ const Right = styled(Grid)`
 
 export default () => {
   const version = useSelector((state) => state.system.version);
+  const location = useLocation();
 
   return (
     <Container>
@@ -49,7 +56,9 @@ export default () => {
             </Typography>
           </Grid>
         </Grid>
-        <Left item xs={4}></Left>
+        <Left item xs={4}>
+          {location.pathname !== "/" && <Link to="/">back</Link>}
+        </Left>
         <Center item xs={4}></Center>
         <Right item xs={4}>
           v{version}
