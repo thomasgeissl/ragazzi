@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { format } from "date-fns";
 import compare from "date-fns/compareDesc";
 import styled from "@emotion/styled";
@@ -18,7 +18,8 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import store from "../store/index";
-import { clearMessages } from "../store/reducers/mqtt";
+import { clearMessages, addSentMessage } from "../store/reducers/mqtt";
+import { getClient } from "../mqtt";
 
 const Container = styled(Card)`
   overflow: scroll;
@@ -34,6 +35,11 @@ export default () => {
     return compare(a.timestamp, b.timestamp);
   });
   const [topicFilter, setTopicFilter] = useState("");
+  const dispatch = useDispatch();
+  function sendMessage(topic, message) {
+    dispatch(addSentMessage(topic, message));
+    return getClient().publish(topic, message);
+  }
 
   return (
     <Container>
@@ -89,7 +95,14 @@ export default () => {
                       {message.type === "INCOMING" && (
                         <CallReceivedIcon></CallReceivedIcon>
                       )}
-                      {message.type === "OUTGOING" && <SendIcon></SendIcon>}
+                      {message.type === "OUTGOING" && (
+                        <SendIcon
+                          onClick={() => {
+                            sendMessage(message.topic, message.message);
+                          }}
+                          style={{ cursor: "pointer" }}
+                        ></SendIcon>
+                      )}
                     </TableCell>
                     <TableCell>{message.topic}</TableCell>
                     <TableCell>{message.message}</TableCell>
