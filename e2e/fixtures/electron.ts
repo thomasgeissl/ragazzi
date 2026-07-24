@@ -5,12 +5,11 @@ import {
   type ElectronApplication,
   type Page,
 } from "@playwright/test";
-import path from "path";
 import net from "net";
-import { fileURLToPath } from "url";
 import electronPath from "electron";
 
-const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
+/** Project root — npm scripts run Playwright with cwd at the repo root. */
+const ROOT = process.cwd();
 
 /** Default broker ports ragazzi binds on startup. */
 export const DEFAULT_WS_PORT = 9001;
