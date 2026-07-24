@@ -5,6 +5,10 @@
   "main": "public/electron.js",
   "homepage": "./",
   "license": "MIT",
+  "author": {
+    "name": "Thomas Geissl",
+    "email": "thomas.geissl@gmail.com"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

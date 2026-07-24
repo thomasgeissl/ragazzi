@@ -100,8 +100,7 @@ jobs:
 
       - name: Build renderer + package
         env:
-          # Only set on macOS (identity step skipped elsewhere → empty).
-          CSC_NAME: ${{ steps.apple_identity.outputs.identity }}
+          # Let electron-builder select the imported Developer ID certificate.
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
