@@ -60,7 +60,9 @@ type ElectronFixtures = {
 };
 
 export const test = base.extend<ElectronFixtures>({
-  electronApp: async (_fixtures, use) => {
+  // Playwright requires object destructuring for the first fixture arg.
+  // biome-ignore lint/correctness/noEmptyPattern: empty deps are intentional
+  electronApp: async ({}, use) => {
     const env = { ...process.env };
     // Cursor/IDE may set this; it breaks launching the Electron binary.
     delete env.ELECTRON_RUN_AS_NODE;
