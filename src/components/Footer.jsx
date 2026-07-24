@@ -1,12 +1,10 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useSelector } from "react-redux";
 
 export default () => {
   const version = useSelector((state) => state.system.version);
-  const location = useLocation();
 
   return (
     <footer style={{ width: "100%" }}>
@@ -29,13 +27,9 @@ export default () => {
           sx={{
             flex: 1,
             bgcolor: "#009246",
-            pl: 1,
             minHeight: 16,
-            "& a": { color: "#fff" },
           }}
-        >
-          {location.pathname !== "/" && <Link to="/">back</Link>}
-        </Box>
+        />
         <Box sx={{ flex: 1, bgcolor: "#fff", minHeight: 16 }} />
         <Box
           sx={{

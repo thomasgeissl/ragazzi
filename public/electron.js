@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, Menu } = require("electron");
+const { app, BrowserWindow, dialog, Menu, ipcMain } = require("electron");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
@@ -14,7 +14,7 @@ const iconPath = [
   path.join(__dirname, "../build/icon.png"),
   path.join(__dirname, "../public/icon.png"),
 ].find((p) => fs.existsSync(p));
-const aedes = require("aedes")();
+const { Aedes } = require("aedes");
 const stats = require("aedes-stats");
 
 const args = process.argv.slice(1);
@@ -22,6 +22,12 @@ const args = process.argv.slice(1);
 let mainWindow;
 let windows = [];
 let mqttClient;
+let brokerRunning = false;
+let brokerStarting = false;
+let tcpServer;
+let wsServer;
+let aedes;
+let aedesReady;
 let config = {
   title: "",
   description: "",
@@ -42,22 +48,220 @@ for (var k in interfaces) {
 const ip = ipAddresses.length > 0 ? ipAddresses[0] : "127.0.0.1";
 
 // start ws, tcp and web servers
-const wsPort = 9001;
-const tcpPort = 1883;
+let wsPort = 9001;
+let tcpPort = 1883;
 let internalHttpPort = 8080;
 let externalHttpPort = 80;
 
 let internalWebserver;
 let externalWebserver;
 
-const tcpServer = net.createServer(aedes.handle);
-const wsServer = http.createServer().listen(wsPort, function () {
-  console.log("websocket server listening on port ", wsPort);
-});
-ws.createServer({ server: wsServer }, aedes.handle);
+const ensureAedes = () => {
+  if (aedes) {
+    return Promise.resolve(aedes);
+  }
+  if (!aedesReady) {
+    aedesReady = Aedes.createBroker().then((broker) => {
+      aedes = broker;
+      // publish stats via mqtt: $SYS/#
+      stats(aedes);
+      return aedes;
+    });
+  }
+  return aedesReady;
+};
 
-// publish stats via mqtt: $SYS/#
-stats(aedes);
+const getBrokerSettings = () => ({
+  running: brokerRunning,
+  wsPort,
+  tcpPort,
+});
+
+const publishBrokerSettings = () => {
+  const settings = getBrokerSettings();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("broker:settings", settings);
+  }
+  if (mqttClient && brokerRunning) {
+    mqttClient.publish(
+      "ragazzi",
+      JSON.stringify({
+        type: "SETBROKERSETTINGS",
+        payload: { value: settings },
+      })
+    );
+  }
+};
+
+const attachMqttHandlers = () => {
+  mqttClient.on("message", (topic, message) => {
+    if (topic === "ragazzi/project/config/get") {
+      publishConfig();
+    }
+    if (topic === "ragazzi/project/open") {
+      openProject(message.toString());
+    }
+    if (topic === "ragazzi/project/open/choose") {
+      openProjectChooser();
+    }
+    if (topic === "ragazzi/webapp/open") {
+      const file = message.toString();
+      const ext = file.split(".").slice(-1)[0];
+      const dir = path.dirname(file);
+      const fileRelative = path.relative(dir, file);
+      openWebsite(dir, fileRelative);
+    }
+  });
+  mqttClient.subscribe("ragazzi/#");
+};
+
+const startBroker = async () => {
+  if (brokerRunning || brokerStarting) {
+    return getBrokerSettings();
+  }
+  brokerStarting = true;
+
+  try {
+    const broker = await ensureAedes();
+
+    return await new Promise((resolve, reject) => {
+      tcpServer = net.createServer(broker.handle);
+      wsServer = http.createServer();
+      ws.createServer({ server: wsServer }, broker.handle);
+
+      let tcpReady = false;
+      let wsReady = false;
+      const maybeReady = () => {
+        if (!tcpReady || !wsReady) return;
+        brokerStarting = false;
+        brokerRunning = true;
+        publishBrokerSettings();
+        resolve(getBrokerSettings());
+      };
+
+      wsServer.listen(wsPort, () => {
+        console.log("websocket server listening on port ", wsPort);
+        wsReady = true;
+        maybeReady();
+      });
+      wsServer.on("error", (err) => {
+        brokerStarting = false;
+        reject(err);
+      });
+
+      tcpServer.listen(tcpPort, () => {
+        console.log(`server started and listening on port ${tcpPort}`);
+        mqttClient = mqtt.connect(`mqtt://localhost:${tcpPort}`);
+        mqttClient.once("connect", () => {
+          attachMqttHandlers();
+          tcpReady = true;
+          maybeReady();
+        });
+        mqttClient.on("error", (err) => {
+          console.error("mqtt client error", err);
+        });
+      });
+      tcpServer.on("error", (err) => {
+        brokerStarting = false;
+        reject(err);
+      });
+    });
+  } catch (err) {
+    brokerStarting = false;
+    throw err;
+  }
+};
+
+const stopBroker = () =>
+  new Promise((resolve) => {
+    if (!brokerRunning && !brokerStarting) {
+      resolve(getBrokerSettings());
+      return;
+    }
+
+    const finish = () => {
+      tcpServer = null;
+      wsServer = null;
+      mqttClient = null;
+      brokerRunning = false;
+      brokerStarting = false;
+      publishBrokerSettings();
+      resolve(getBrokerSettings());
+    };
+
+    const closeServer = (server) =>
+      new Promise((res) => {
+        if (!server) {
+          res();
+          return;
+        }
+        if (typeof server.closeAllConnections === "function") {
+          server.closeAllConnections();
+        }
+        server.close(() => res());
+        setTimeout(res, 1000);
+      });
+
+    const endMqtt = () =>
+      new Promise((res) => {
+        if (!mqttClient) {
+          res();
+          return;
+        }
+        mqttClient.end(true, {}, () => res());
+        setTimeout(res, 1000);
+      });
+
+    Promise.all([endMqtt(), closeServer(tcpServer), closeServer(wsServer)]).then(
+      finish
+    );
+  });
+
+const normalizePort = (value, fallback) => {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    return fallback;
+  }
+  return port;
+};
+
+ipcMain.handle("broker:start", async () => {
+  await startBroker();
+  return getBrokerSettings();
+});
+ipcMain.handle("broker:stop", async () => {
+  await stopBroker();
+  return getBrokerSettings();
+});
+ipcMain.handle("broker:settings", () => getBrokerSettings());
+ipcMain.handle("broker:setPorts", async (_event, ports = {}) => {
+  const nextWs = normalizePort(ports.wsPort, wsPort);
+  const nextTcp = normalizePort(ports.tcpPort, tcpPort);
+
+  if (nextWs === nextTcp) {
+    throw new Error("WebSocket and TCP ports must be different");
+  }
+
+  if (nextWs === wsPort && nextTcp === tcpPort) {
+    return getBrokerSettings();
+  }
+
+  const wasRunning = brokerRunning;
+  if (wasRunning) {
+    await stopBroker();
+  }
+
+  wsPort = nextWs;
+  tcpPort = nextTcp;
+
+  if (wasRunning) {
+    await startBroker();
+  } else {
+    publishBrokerSettings();
+  }
+
+  return getBrokerSettings();
+});
 
 portscanner.findAPortNotInUse(
   externalHttpPort,
@@ -102,6 +306,7 @@ const parameterAppendix =
   ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
 
 const publishConfig = () => {
+  if (!mqttClient || !brokerRunning) return;
   const action = {
     type: "SETCONFIG",
     payload: {
@@ -116,28 +321,8 @@ const publishConfig = () => {
   mqttClient.publish("ragazzi", JSON.stringify(action));
 };
 
-tcpServer.listen(tcpPort, function () {
-  console.log(`server started and listening on port ${tcpPort}`);
-  mqttClient = mqtt.connect(`mqtt://localhost:${tcpPort}`);
-  mqttClient.on("message", (topic, message) => {
-    if (topic === "ragazzi/project/config/get") {
-      publishConfig();
-    }
-    if (topic === "ragazzi/project/open") {
-      openProject(message.toString());
-    }
-    if (topic === "ragazzi/project/open/choose") {
-      openProjectChooser();
-    }
-    if (topic === "ragazzi/webapp/open") {
-      const file = message.toString();
-      const ext = file.split(".").slice(-1)[0];
-      const dir = path.dirname(file);
-      const fileRelative = path.relative(dir, file);
-      openWebsite(dir, fileRelative);
-    }
-  });
-  mqttClient.subscribe("ragazzi/#");
+startBroker().catch((err) => {
+  console.error("failed to start broker", err);
 });
 
 const createInternalWebserver = (dir) => {
@@ -361,6 +546,15 @@ function createWindow() {
     width: 1024,
     height: 768,
     ...(iconPath ? { icon: iconPath } : {}),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    publishBrokerSettings();
   });
 
   // and load the index.html of the app.

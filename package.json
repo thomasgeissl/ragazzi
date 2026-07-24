@@ -10,8 +10,8 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
-    "aedes": "^0.42.1",
-    "aedes-stats": "^3.0.0",
+    "aedes": "^1.1.1",
+    "aedes-stats": "^4.0.0",
     "date-fns": "^2.13.0",
     "dotenv": "^8.2.0",
     "json-edit-react": "^1.30.2",
@@ -25,6 +25,7 @@
     "redux": "^4.0.5",
     "redux-observable": "^1.2.0",
     "rxjs": "^6.5.5",
+    "websocket-stream": "^5.5.2",
     "zustand": "^3.7.2"
   },
   "scripts": {
@@ -77,6 +78,8 @@
     },
     "files": [
       "build/**/*",
+      "public/electron.js",
+      "public/preload.js",
       "node_modules/**/*"
     ],
     "directories": {
