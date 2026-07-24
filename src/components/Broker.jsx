@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { makeStyles } from "@mui/styles";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -27,12 +26,6 @@ setInterval(() => {
   store.dispatch(setConnected(getClient().connected));
 }, 3000);
 
-const useStyles = makeStyles({
-  card: {
-    padding: "16px",
-  },
-});
-
 export default () => {
   const [protocol, setProtocol] = useState("ws");
   const [host, setHost] = useState("localhost");
@@ -56,57 +49,50 @@ export default () => {
     setExpanded(!expanded);
   };
 
-  function Status(props) {
+  function Status() {
     if (connected)
       return (
-        <Grid container spacing={1}>
-          <Grid item>
-            <Box color="success.main">
-              <CheckIcon></CheckIcon>
-            </Box>
-          </Grid>
-          <Grid item>
-            <Box color="success.main">connected to broker</Box>
-          </Grid>
-        </Grid>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ color: "success.main", display: "flex" }}>
+            <CheckIcon />
+          </Box>
+          <Typography component="h3" variant="h6" sx={{ color: "success.main" }}>
+            connected to broker
+          </Typography>
+        </Box>
       );
     else
       return (
-        <Grid container spacing={1}>
-          <Grid item>
-            <Box color="primary.main">
-              <BlockIcon></BlockIcon>
-            </Box>
-          </Grid>
-          <Grid item>
-            <Box color="primary.main">no connection to broker</Box>
-          </Grid>
-        </Grid>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ color: "primary.main", display: "flex" }}>
+            <BlockIcon />
+          </Box>
+          <Typography component="h3" variant="h6" sx={{ color: "primary.main" }}>
+            no connection to broker
+          </Typography>
+        </Box>
       );
   }
 
-  const classes = useStyles();
-
   return (
-    <Card>
-      <CardActions disableSpacing className={classes.card}>
-        <Grid
-          item
-          container
-          direction="row"
-          justify="space-between"
-          alignItems="center"
+    <Card sx={{ width: "100%" }}>
+      <CardActions disableSpacing sx={{ p: "16px", width: "100%" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+          }}
         >
-          <Grid item flexGrow={1}>
-            <Status></Status>
-          </Grid>
-          <Grid item onClick={handleExpandClick}>
-            <Typography>
-              {expanded && <ExpandLessIcon></ExpandLessIcon>}
-              {!expanded && <ExpandMoreIcon></ExpandMoreIcon>}
-            </Typography>
-          </Grid>
-        </Grid>
+          <Box sx={{ flexGrow: 1 }}>
+            <Status />
+          </Box>
+          <Box onClick={handleExpandClick} sx={{ cursor: "pointer" }}>
+            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </Box>
+        </Box>
       </CardActions>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Divider />
@@ -115,11 +101,11 @@ export default () => {
             container
             spacing={3}
             direction="row"
-            justify="space-between"
+            justifyContent="space-between"
             alignItems="center"
           >
-            <Grid item container spacing={3} xs={9}>
-              <Grid item xs={2}>
+            <Grid container spacing={3} size={9}>
+              <Grid size={2}>
                 <TextField
                   fullWidth
                   size="small"
@@ -128,7 +114,7 @@ export default () => {
                   onChange={(event) => setProtocol(event.target.value)}
                 />
               </Grid>
-              <Grid item xs={7}>
+              <Grid size={7}>
                 <TextField
                   fullWidth
                   size="small"
@@ -137,7 +123,7 @@ export default () => {
                   onChange={(event) => setHost(event.target.value)}
                 />
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <TextField
                   fullWidth
                   size="small"
@@ -147,7 +133,7 @@ export default () => {
                 />
               </Grid>
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <Button
                 fullWidth
                 disabled={
@@ -155,13 +141,10 @@ export default () => {
                   protocol === connectedProtocol &&
                   host === connectedHost &&
                   port === connectedPort
-                    ? true
-                    : false
                 }
                 variant="contained"
                 color="primary"
                 type="button"
-                justify="right"
                 onClick={() => handleClick(protocol, host, port)}
               >
                 connect

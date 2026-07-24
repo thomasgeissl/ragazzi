@@ -30,7 +30,7 @@ export default () => {
   return (
     <Card>
       <CardContent>
-        <Typography color="textPrimary" gutterBottom>
+        <Typography color="text.primary" gutterBottom>
           <b>Subscriptions</b>
         </Typography>
 

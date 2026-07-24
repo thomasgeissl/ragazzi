@@ -20,6 +20,6 @@ brew install --cask ragazzi
 ```
 ## Development
 
-- yarn install
-- yarn electron-dev
-- yarn electron-build
+- npm install
+- npm run electron-dev
+- npm run electron-build

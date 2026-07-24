@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 
-import { makeStyles } from "@mui/styles";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -19,102 +18,84 @@ import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 
 import client from "../mqtt";
 
-const useStyles = makeStyles({
-  h1: {
-    marginTop: "20px",
-  },
-  status: {
-    maxHeight: "24px",
-  },
-  icon: {
-    minWidth: "36px",
-  },
-});
-
 export default () => {
   const config = useSelector((state) => state.system.config);
   useEffect(() => {
     client.publish("ragazzi/project/config/get", "");
   });
 
-  const classes = useStyles();
-
   return (
     <Container>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h2" color="primary" className={classes.h1}>
-            <i>ciao ragazzi.</i>
-          </Typography>
-        </Grid>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: "20px" }}>
+        <Typography variant="h2" color="primary">
+          <i>ciao ragazzi.</i>
+        </Typography>
 
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="caption">
-                Your friendly mqtt broker is up and running at{" "}
-                <b>{config.ip}</b>.<br />
-                It communicates on ports <b>9001</b> (ws) and <b>1883</b> (tcp).
-                <br />
-                For monitoring and debugging, the{" "}
-                <Link to="/dev">mqtt dev tools</Link> might be useful.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        <Card>
+          <CardContent>
+            <Typography variant="caption">
+              Your friendly mqtt broker is up and running at{" "}
+              <b>{config.ip}</b>.<br />
+              It communicates on ports <b>9001</b> (ws) and <b>1883</b> (tcp).
+              <br />
+              For monitoring and debugging, the{" "}
+              <Link to="/dev">mqtt dev tools</Link> might be useful.
+            </Typography>
+          </CardContent>
+        </Card>
 
         {(!config || !config.views || config.views.length === 0) && (
-          <Grid item>
+          <Box>
             <Button
               variant="contained"
               color="primary"
               type="button"
-              onClick={(event) => {
+              onClick={() => {
                 client.publish("ragazzi/project/open/choose", "");
               }}
             >
               open project
             </Button>
-          </Grid>
+          </Box>
         )}
 
         {config &&
           Object.entries(config).length > 0 &&
           config.views &&
           (config.views.length > 0 || config.externalViews.length > 0) && (
-            <>
-              <Grid item xs={6}>
+            <Grid container spacing={2}>
+              <Grid size={6}>
                 <Card>
                   <CardContent>
-                    <Grid container spacing={1} className={classes.status}>
-                      <Grid item>
-                        <Box color="success.main">
-                          <CheckIcon></CheckIcon>
+                    <Grid container spacing={1} sx={{ maxHeight: "24px" }}>
+                      <Grid>
+                        <Box sx={{ color: "success.main" }}>
+                          <CheckIcon />
                         </Box>
                       </Grid>
-                      <Grid item>
-                        <Typography>
-                          <Box color="success.main">project is hosted</Box>
+                      <Grid>
+                        <Typography sx={{ color: "success.main" }}>
+                          project is hosted
                         </Typography>
                       </Grid>
                     </Grid>
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Card>
                   <CardContent>
-                    <Typography color="textPrimary" gutterBottom>
+                    <Typography color="text.primary" gutterBottom>
                       <b>Views</b>
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography variant="body1" component="div">
                       <List>
                         {config.views &&
                           config.views.map((view, index) => {
                             return (
                               <ListItem key={index}>
-                                <ListItemIcon className={classes.icon}>
-                                  <DesktopWindowsIcon></DesktopWindowsIcon>
+                                <ListItemIcon sx={{ minWidth: "36px" }}>
+                                  <DesktopWindowsIcon />
                                 </ListItemIcon>
                                 <a
                                   href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
@@ -132,8 +113,8 @@ export default () => {
                           config.externalViews.map((view, index) => {
                             return (
                               <ListItem key={index}>
-                                <ListItemIcon className={classes.icon}>
-                                  <PhoneAndroidIcon></PhoneAndroidIcon>
+                                <ListItemIcon sx={{ minWidth: "36px" }}>
+                                  <PhoneAndroidIcon />
                                 </ListItemIcon>
                                 <a
                                   href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
@@ -162,9 +143,9 @@ export default () => {
                   </CardContent>
                 </Card>
               </Grid>
-            </>
+            </Grid>
           )}
-      </Grid>
+      </Box>
     </Container>
   );
 };

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, Menu, protocol } = require("electron");
+const { app, BrowserWindow, dialog, Menu } = require("electron");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
@@ -8,7 +8,12 @@ const url = require("url");
 const mqtt = require("mqtt");
 const net = require("net");
 const ws = require("websocket-stream");
-const isDev = require("electron-is-dev");
+const isDev = !app.isPackaged;
+const iconPath = [
+  path.join(__dirname, "icon.png"),
+  path.join(__dirname, "../build/icon.png"),
+  path.join(__dirname, "../public/icon.png"),
+].find((p) => fs.existsSync(p));
 const aedes = require("aedes")();
 const stats = require("aedes-stats");
 
@@ -190,6 +195,7 @@ const openProjectChooser = () => {
 const addWindow = (url, opts) => {
   opts = opts ? opts : {};
   let win = new BrowserWindow({
+    ...(iconPath ? { icon: iconPath } : {}),
     ...opts,
   });
   win.loadURL(url);
@@ -297,7 +303,7 @@ function createWindow() {
               { type: "separator" },
               {
                 label: "Speech",
-                submenu: [{ role: "startspeaking" }, { role: "stopspeaking" }],
+                submenu: [{ role: "startSpeaking" }, { role: "stopSpeaking" }],
               },
             ]
           : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }]),
@@ -308,12 +314,12 @@ function createWindow() {
       label: "View",
       submenu: [
         { role: "reload" },
-        { role: "forcereload" },
-        { role: "toggledevtools" },
+        { role: "forceReload" },
+        { role: "toggleDevTools" },
         { type: "separator" },
-        { role: "resetzoom" },
-        { role: "zoomin" },
-        { role: "zoomout" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
         { type: "separator" },
         { role: "togglefullscreen" },
       ],
@@ -354,6 +360,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
+    ...(iconPath ? { icon: iconPath } : {}),
   });
 
   // and load the index.html of the app.
@@ -364,8 +371,12 @@ function createWindow() {
   );
 }
 
-app.whenReady().then(createWindow);
-app.whenReady().then(() => {});
+app.whenReady().then(() => {
+  if (isMac && iconPath) {
+    app.dock.setIcon(iconPath);
+  }
+  createWindow();
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
