@@ -24,7 +24,7 @@ test("open project then shutdown @smoke", async ({ electronApp, window }) => {
   await expect(window.getByText("project is hosted")).toBeVisible();
   await expect(window.getByText("primary")).toBeVisible();
   await expect(window.getByText("secondary")).toBeVisible();
-  await expect(window.getByText("external")).toBeVisible();
+  await expect(window.getByRole("link", { name: "external", exact: true })).toBeVisible();
 
   await window.getByRole("button", { name: "shutdown" }).click();
   await expect(window.getByRole("button", { name: "open project" })).toBeVisible();
