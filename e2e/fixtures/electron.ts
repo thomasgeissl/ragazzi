@@ -67,6 +67,8 @@ export const test = base.extend<ElectronFixtures>({
     // Use default broker ports (do not override).
     delete env.RAGAZZI_WS_PORT;
     delete env.RAGAZZI_TCP_PORT;
+    // Port 80 needs root on Linux CI; bind external HTTP to an unprivileged port.
+    env.RAGAZZI_EXTERNAL_HTTP_PORT = "18080";
 
     const app = await electron.launch({
       executablePath: String(electronPath),

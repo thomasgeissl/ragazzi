@@ -266,23 +266,22 @@ ipcMain.handle(
   },
 );
 
-portscanner.findAPortNotInUse(
-  externalHttpPort,
-  externalHttpPort + 100,
-  "127.0.0.1",
-  (error, port) => {
+const startExternalWebserver = (fromPort: number, attemptsLeft = 100) => {
+  if (attemptsLeft <= 0) {
+    console.error("could not bind external http server");
+    return;
+  }
+  portscanner.findAPortNotInUse(fromPort, fromPort + attemptsLeft, "127.0.0.1", (error, port) => {
     console.log(error);
     console.log("AVAILABLE PORT AT: " + port);
     if (typeof port !== "number") return;
-    externalHttpPort = port;
-    externalWebserver = http
-      .createServer((_req, res) => {
-        res.writeHead(200);
-        let listItems = "";
-        (config.externalViews ?? []).forEach((view) => {
-          listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
-        });
-        res.write(`
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200);
+      let listItems = "";
+      (config.externalViews ?? []).forEach((view) => {
+        listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
+      });
+      res.write(`
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -300,11 +299,27 @@ portscanner.findAPortNotInUse(
       </body>
     </html>
     `);
-        res.end();
-      })
-      .listen(externalHttpPort);
-  },
-);
+      res.end();
+    });
+    server.once("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EACCES" || err.code === "EADDRINUSE") {
+        // Skip the privileged range entirely after EACCES (Linux denies :1–1023 without root).
+        const next = err.code === "EACCES" && port < 1024 ? 1024 : port + 1;
+        console.warn(`external http port ${port} unavailable (${err.code}), trying ${next}`);
+        startExternalWebserver(next, attemptsLeft - 1);
+        return;
+      }
+      console.error("external webserver error", err);
+    });
+    server.listen(port, () => {
+      externalHttpPort = port;
+      externalWebserver = server;
+      console.log("external http server listening on port ", port);
+    });
+  });
+};
+
+startExternalWebserver(externalHttpPort);
 
 const parameterAppendix = ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
 
