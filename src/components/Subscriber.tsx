@@ -12,7 +12,7 @@ import { getClient } from "../mqtt";
 
 import { addSubscription } from "../store/reducers/mqtt";
 
-export default () => {
+export default function Subscriber() {
   const [topic, setTopic] = useState("");
   const dispatch = useDispatch();
   return (
@@ -53,4 +53,4 @@ export default () => {
       </CardActions>
     </Card>
   );
-};
+}

@@ -1,10 +1,11 @@
-const {
+import {
   test,
   expect,
   waitForPort,
   DEFAULT_WS_PORT,
   DEFAULT_TCP_PORT,
-} = require("./fixtures/electron");
+} from "./fixtures/electron";
+import type { BrokerSettings } from "../src/types/ragazzi";
 
 test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
   window,
@@ -15,7 +16,10 @@ test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
   await waitForPort(DEFAULT_WS_PORT);
   await waitForPort(DEFAULT_TCP_PORT);
 
-  const broker = await window.evaluate(async () => {
+  const broker = await window.evaluate(async (): Promise<BrokerSettings> => {
+    if (!window.ragazzi?.broker) {
+      throw new Error("window.ragazzi.broker is unavailable");
+    }
     return window.ragazzi.broker.getSettings();
   });
 

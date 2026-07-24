@@ -9,7 +9,7 @@ import Broker from "./Broker";
 import Publisher from "./Publisher";
 import Logger from "./Logger";
 
-export default () => {
+export default function Dev() {
   return (
     <Container sx={{ mt: 0, pt: "20px" }}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -35,4 +35,4 @@ export default () => {
       </Box>
     </Container>
   );
-};
+}

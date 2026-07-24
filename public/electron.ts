@@ -1,13 +1,26 @@
-const { app, BrowserWindow, dialog, Menu, ipcMain } = require("electron");
-const os = require("os");
-const fs = require("fs");
-const path = require("path");
-const http = require("http");
-const portscanner = require("portscanner");
-const url = require("url");
-const mqtt = require("mqtt");
-const net = require("net");
-const ws = require("websocket-stream");
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  Menu,
+  ipcMain,
+  type MenuItemConstructorOptions,
+  type BrowserWindowConstructorOptions,
+} from "electron";
+import os from "os";
+import fs from "fs";
+import path from "path";
+import http from "http";
+import portscanner from "portscanner";
+import url from "url";
+import mqtt, { type MqttClient } from "mqtt";
+import net from "net";
+import ws from "websocket-stream";
+import { Aedes } from "aedes";
+import stats from "aedes-stats";
+import { normalizePort } from "../src/lib/ports";
+import type { BrokerSettings, ProjectConfig, ProjectView } from "../src/types/ragazzi";
+
 const isDev = !app.isPackaged;
 const isE2E = process.env.RAGAZZI_E2E === "1";
 const iconPath = [
@@ -15,22 +28,17 @@ const iconPath = [
   path.join(__dirname, "../build/icon.png"),
   path.join(__dirname, "../public/icon.png"),
 ].find((p) => fs.existsSync(p));
-const { Aedes } = require("aedes");
-const stats = require("aedes-stats");
-const { normalizePort } = require("./ports");
 
-const args = process.argv.slice(1);
-
-let mainWindow;
-let windows = [];
-let mqttClient;
+let mainWindow: BrowserWindow | null = null;
+let windows: BrowserWindow[] = [];
+let mqttClient: MqttClient | null = null;
 let brokerRunning = false;
 let brokerStarting = false;
-let tcpServer;
-let wsServer;
-let aedes;
-let aedesReady;
-let config = {
+let tcpServer: net.Server | null = null;
+let wsServer: http.Server | null = null;
+let aedes: Awaited<ReturnType<typeof Aedes.createBroker>> | null = null;
+let aedesReady: Promise<NonNullable<typeof aedes>> | null = null;
+let config: ProjectConfig = {
   title: "",
   description: "",
   views: [],
@@ -38,10 +46,9 @@ let config = {
 };
 const isMac = process.platform === "darwin";
 const interfaces = os.networkInterfaces();
-let ipAddresses = [];
-for (var k in interfaces) {
-  for (var k2 in interfaces[k]) {
-    var address = interfaces[k][k2];
+const ipAddresses: string[] = [];
+for (const name of Object.keys(interfaces)) {
+  for (const address of interfaces[name] ?? []) {
     if (address.family === "IPv4" && !address.internal) {
       ipAddresses.push(address.address);
     }
@@ -49,14 +56,13 @@ for (var k in interfaces) {
 }
 const ip = ipAddresses.length > 0 ? ipAddresses[0] : "127.0.0.1";
 
-// start ws, tcp and web servers (env overrides used by e2e to avoid clashes)
 let wsPort = Number(process.env.RAGAZZI_WS_PORT) || 9001;
 let tcpPort = Number(process.env.RAGAZZI_TCP_PORT) || 1883;
 let internalHttpPort = Number(process.env.RAGAZZI_HTTP_PORT) || 8080;
 let externalHttpPort = Number(process.env.RAGAZZI_EXTERNAL_HTTP_PORT) || 80;
 
-let internalWebserver;
-let externalWebserver;
+let internalWebserver: http.Server | null = null;
+let externalWebserver: http.Server | null = null;
 
 const ensureAedes = () => {
   if (aedes) {
@@ -65,7 +71,6 @@ const ensureAedes = () => {
   if (!aedesReady) {
     aedesReady = Aedes.createBroker().then((broker) => {
       aedes = broker;
-      // publish stats via mqtt: $SYS/#
       stats(aedes);
       return aedes;
     });
@@ -73,7 +78,7 @@ const ensureAedes = () => {
   return aedesReady;
 };
 
-const getBrokerSettings = () => ({
+const getBrokerSettings = (): BrokerSettings => ({
   running: brokerRunning,
   wsPort,
   tcpPort,
@@ -96,6 +101,7 @@ const publishBrokerSettings = () => {
 };
 
 const attachMqttHandlers = () => {
+  if (!mqttClient) return;
   mqttClient.on("message", (topic, message) => {
     if (topic === "ragazzi/project/config/get") {
       publishConfig();
@@ -111,7 +117,6 @@ const attachMqttHandlers = () => {
     }
     if (topic === "ragazzi/webapp/open") {
       const file = message.toString();
-      const ext = file.split(".").slice(-1)[0];
       const dir = path.dirname(file);
       const fileRelative = path.relative(dir, file);
       openWebsite(dir, fileRelative);
@@ -120,7 +125,7 @@ const attachMqttHandlers = () => {
   mqttClient.subscribe("ragazzi/#");
 };
 
-const startBroker = async () => {
+const startBroker = async (): Promise<BrokerSettings> => {
   if (brokerRunning || brokerStarting) {
     return getBrokerSettings();
   }
@@ -129,7 +134,7 @@ const startBroker = async () => {
   try {
     const broker = await ensureAedes();
 
-    return await new Promise((resolve, reject) => {
+    return await new Promise<BrokerSettings>((resolve, reject) => {
       tcpServer = net.createServer(broker.handle);
       wsServer = http.createServer();
       ws.createServer({ server: wsServer }, broker.handle);
@@ -177,7 +182,7 @@ const startBroker = async () => {
   }
 };
 
-const stopBroker = () =>
+const stopBroker = (): Promise<BrokerSettings> =>
   new Promise((resolve) => {
     if (!brokerRunning && !brokerStarting) {
       resolve(getBrokerSettings());
@@ -194,13 +199,13 @@ const stopBroker = () =>
       resolve(getBrokerSettings());
     };
 
-    const closeServer = (server) =>
-      new Promise((res) => {
+    const closeServer = (server: http.Server | net.Server | null) =>
+      new Promise<void>((res) => {
         if (!server) {
           res();
           return;
         }
-        if (typeof server.closeAllConnections === "function") {
+        if ("closeAllConnections" in server && typeof server.closeAllConnections === "function") {
           server.closeAllConnections();
         }
         server.close(() => res());
@@ -208,7 +213,7 @@ const stopBroker = () =>
       });
 
     const endMqtt = () =>
-      new Promise((res) => {
+      new Promise<void>((res) => {
         if (!mqttClient) {
           res();
           return;
@@ -217,9 +222,11 @@ const stopBroker = () =>
         setTimeout(res, 1000);
       });
 
-    Promise.all([endMqtt(), closeServer(tcpServer), closeServer(wsServer)]).then(
-      finish
-    );
+    Promise.all([
+      endMqtt(),
+      closeServer(tcpServer),
+      closeServer(wsServer),
+    ]).then(finish);
   });
 
 ipcMain.handle("broker:start", async () => {
@@ -231,48 +238,52 @@ ipcMain.handle("broker:stop", async () => {
   return getBrokerSettings();
 });
 ipcMain.handle("broker:settings", () => getBrokerSettings());
-ipcMain.handle("broker:setPorts", async (_event, ports = {}) => {
-  const nextWs = normalizePort(ports.wsPort, wsPort);
-  const nextTcp = normalizePort(ports.tcpPort, tcpPort);
+ipcMain.handle(
+  "broker:setPorts",
+  async (_event, ports: { wsPort?: number; tcpPort?: number } = {}) => {
+    const nextWs = normalizePort(ports.wsPort, wsPort);
+    const nextTcp = normalizePort(ports.tcpPort, tcpPort);
 
-  if (nextWs === nextTcp) {
-    throw new Error("WebSocket and TCP ports must be different");
-  }
+    if (nextWs === nextTcp) {
+      throw new Error("WebSocket and TCP ports must be different");
+    }
 
-  if (nextWs === wsPort && nextTcp === tcpPort) {
+    if (nextWs === wsPort && nextTcp === tcpPort) {
+      return getBrokerSettings();
+    }
+
+    const wasRunning = brokerRunning;
+    if (wasRunning) {
+      await stopBroker();
+    }
+
+    wsPort = nextWs;
+    tcpPort = nextTcp;
+
+    if (wasRunning) {
+      await startBroker();
+    } else {
+      publishBrokerSettings();
+    }
+
     return getBrokerSettings();
   }
-
-  const wasRunning = brokerRunning;
-  if (wasRunning) {
-    await stopBroker();
-  }
-
-  wsPort = nextWs;
-  tcpPort = nextTcp;
-
-  if (wasRunning) {
-    await startBroker();
-  } else {
-    publishBrokerSettings();
-  }
-
-  return getBrokerSettings();
-});
+);
 
 portscanner.findAPortNotInUse(
   externalHttpPort,
   externalHttpPort + 100,
   "127.0.0.1",
-  function (error, port) {
+  (error, port) => {
     console.log(error);
     console.log("AVAILABLE PORT AT: " + port);
+    if (typeof port !== "number") return;
     externalHttpPort = port;
     externalWebserver = http
-      .createServer(function (req, res) {
+      .createServer((_req, res) => {
         res.writeHead(200);
         let listItems = "";
-        config.externalViews.map((view) => {
+        (config.externalViews ?? []).forEach((view) => {
           listItems += `<li><a href="http://${ip}:${internalHttpPort}/${view.path}${parameterAppendix}">${view.title}</a></li>`;
         });
         res.write(`
@@ -322,33 +333,33 @@ startBroker().catch((err) => {
   console.error("failed to start broker", err);
 });
 
-const createInternalWebserver = (dir) => {
+const createInternalWebserver = (dir: string) => {
   portscanner.findAPortNotInUse(
     internalHttpPort,
     internalHttpPort + 100,
     "127.0.0.1",
-    function (error, port) {
+    (_error, port) => {
       console.log("AVAILABLE PORT AT: " + port);
+      if (typeof port !== "number") return;
       internalHttpPort = port;
       internalWebserver = http
-        .createServer(function (req, res) {
-          fs.readFile(
-            path.join(dir, url.parse(req.url, true).pathname),
-            function (err, data) {
-              if (err) {
-                res.writeHead(404);
-                res.end(JSON.stringify(err));
-                return;
-              }
-              res.writeHead(200);
-              res.end(data);
+        .createServer((req, res) => {
+          const pathname = url.parse(req.url ?? "/", true).pathname ?? "/";
+          fs.readFile(path.join(dir, pathname), (err, data) => {
+            if (err) {
+              res.writeHead(404);
+              res.end(JSON.stringify(err));
+              return;
             }
-          );
+            res.writeHead(200);
+            res.end(data);
+          });
         })
         .listen(internalHttpPort);
     }
   );
 };
+
 const openProjectChooser = () => {
   const result = dialog.showOpenDialog({
     filters: [
@@ -374,16 +385,19 @@ const openProjectChooser = () => {
   });
 };
 
-const addWindow = (url, opts) => {
-  opts = opts ? opts : {};
-  let win = new BrowserWindow({
+const addWindow = (
+  targetUrl: string,
+  opts?: BrowserWindowConstructorOptions
+) => {
+  const win = new BrowserWindow({
     ...(iconPath ? { icon: iconPath } : {}),
-    ...opts,
+    ...(opts ?? {}),
   });
-  win.loadURL(url);
+  win.loadURL(targetUrl);
   windows.push(win);
 };
-const openWebsite = (dir, fileRelative) => {
+
+const openWebsite = (dir: string, fileRelative: string) => {
   closeProjectWindows();
   if (internalWebserver) {
     internalWebserver.close(() => {
@@ -428,7 +442,7 @@ const closeProject = () => {
   publishConfig();
 };
 
-const openProject = (file) => {
+const openProject = (file: string) => {
   closeProjectWindows();
   const dir = path.dirname(file);
   if (internalWebserver) {
@@ -442,41 +456,39 @@ const openProject = (file) => {
 
   fs.readFile(file, "utf8", (err, data) => {
     if (err) throw err;
-    const obj = JSON.parse(data);
+    const obj = JSON.parse(data) as ProjectConfig;
     config = {
       ...config,
       ...obj,
     };
     publishConfig();
 
-    obj.views.forEach((view) => {
+    (obj.views ?? []).forEach((view: ProjectView) => {
       addWindow(`http://localhost:${internalHttpPort}/${view.path}`, view);
     });
   });
 };
 
 function createWindow() {
-  const template = [
-    // { role: 'appMenu' }
+  const template: MenuItemConstructorOptions[] = [
     ...(isMac
       ? [
           {
             label: app.name,
             submenu: [
-              { role: "about" },
-              { type: "separator" },
-              { role: "services" },
-              { type: "separator" },
-              { role: "hide" },
-              { role: "hideothers" },
-              { role: "unhide" },
-              { type: "separator" },
-              { role: "quit" },
+              { role: "about" as const },
+              { type: "separator" as const },
+              { role: "services" as const },
+              { type: "separator" as const },
+              { role: "hide" as const },
+              { role: "hideOthers" as const },
+              { role: "unhide" as const },
+              { type: "separator" as const },
+              { role: "quit" as const },
             ],
           },
         ]
       : []),
-    // { role: 'fileMenu' }
     {
       label: "File",
       submenu: [
@@ -487,62 +499,66 @@ function createWindow() {
             openProjectChooser();
           },
         },
-        isMac ? { role: "close" } : { role: "quit" },
+        isMac ? { role: "close" as const } : { role: "quit" as const },
       ],
     },
-    // { role: 'editMenu' }
     {
       label: "Edit",
       submenu: [
-        { role: "undo" },
-        { role: "redo" },
-        { type: "separator" },
-        { role: "cut" },
-        { role: "copy" },
-        { role: "paste" },
+        { role: "undo" as const },
+        { role: "redo" as const },
+        { type: "separator" as const },
+        { role: "cut" as const },
+        { role: "copy" as const },
+        { role: "paste" as const },
         ...(isMac
           ? [
-              { role: "pasteAndMatchStyle" },
-              { role: "delete" },
-              { role: "selectAll" },
-              { type: "separator" },
+              { role: "pasteAndMatchStyle" as const },
+              { role: "delete" as const },
+              { role: "selectAll" as const },
+              { type: "separator" as const },
               {
                 label: "Speech",
-                submenu: [{ role: "startSpeaking" }, { role: "stopSpeaking" }],
+                submenu: [
+                  { role: "startSpeaking" as const },
+                  { role: "stopSpeaking" as const },
+                ],
               },
             ]
-          : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }]),
+          : [
+              { role: "delete" as const },
+              { type: "separator" as const },
+              { role: "selectAll" as const },
+            ]),
       ],
     },
-    // { role: 'viewMenu' }
     {
       label: "View",
       submenu: [
-        { role: "reload" },
-        { role: "forceReload" },
-        { role: "toggleDevTools" },
-        { type: "separator" },
-        { role: "resetZoom" },
-        { role: "zoomIn" },
-        { role: "zoomOut" },
-        { type: "separator" },
-        { role: "togglefullscreen" },
+        { role: "reload" as const },
+        { role: "forceReload" as const },
+        { role: "toggleDevTools" as const },
+        { type: "separator" as const },
+        { role: "resetZoom" as const },
+        { role: "zoomIn" as const },
+        { role: "zoomOut" as const },
+        { type: "separator" as const },
+        { role: "togglefullscreen" as const },
       ],
     },
-    // { role: 'windowMenu' }
     {
       label: "Window",
       submenu: [
-        { role: "minimize" },
-        { role: "zoom" },
+        { role: "minimize" as const },
+        { role: "zoom" as const },
         ...(isMac
           ? [
-              { type: "separator" },
-              { role: "front" },
-              { type: "separator" },
-              { role: "window" },
+              { type: "separator" as const },
+              { role: "front" as const },
+              { type: "separator" as const },
+              { role: "window" as const },
             ]
-          : [{ role: "close" }]),
+          : [{ role: "close" as const }]),
       ],
     },
     {
@@ -551,7 +567,7 @@ function createWindow() {
         {
           label: "Learn More",
           click: async () => {
-            const { shell } = require("electron");
+            const { shell } = await import("electron");
             await shell.openExternal("https://electronjs.org");
           },
         },
@@ -561,7 +577,6 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -577,8 +592,6 @@ function createWindow() {
     publishBrokerSettings();
   });
 
-  // and load the index.html of the app.
-  // RAGAZZI_E2E loads the production build without packaging (Playwright).
   mainWindow.loadURL(
     isDev && !isE2E
       ? "http://localhost:3000"
@@ -593,27 +606,15 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-// Quit when all windows are closed.
 app.on("window-all-closed", () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  //   if (process.platform !== "darwin") {
-  //     app.quit();
-  //   }
   app.quit();
 });
 
 app.on("activate", () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
-// if (args.length > 0) {
-//   // dialog.showErrorBox("args", "" + process.argv.length);
-//   if (args[0].length > 2) {
-//     openProject(args[0]);
-//   }
-// }
+// silence unused binding (kept for parity with prior JS)
+void externalWebserver;

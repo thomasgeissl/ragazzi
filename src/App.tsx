@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Provider as StoreProvider } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import styled from "@emotion/styled";
-import mqtt from "mqtt";
+import mqtt, { type MqttClient } from "mqtt";
 
 import Home from "./components/Home";
 import Dev from "./components/Dev";
@@ -14,11 +14,12 @@ import theme from "./theme";
 
 import store from "./store";
 import { reconnectLocal } from "./mqtt";
+import type { BrokerSettings } from "./types/ragazzi";
 
-let busClient = mqtt.connect("ws://localhost:9001");
+let busClient: MqttClient = mqtt.connect("ws://localhost:9001");
 let busWsPort = 9001;
 
-const attachBusHandlers = (client) => {
+const attachBusHandlers = (client: MqttClient) => {
   client.subscribe("ragazzi");
   client.on("message", (topic, message) => {
     if (topic === "ragazzi") {
@@ -30,20 +31,20 @@ const attachBusHandlers = (client) => {
 
 attachBusHandlers(busClient);
 
-const reconnectBus = (wsPort) => {
+const reconnectBus = (wsPort: number | string) => {
   const port = Number(wsPort) || 9001;
   if (port === busWsPort) return;
   busWsPort = port;
   try {
     busClient.end(true);
-  } catch (err) {
+  } catch {
     // ignore disconnect errors while reconnecting
   }
   busClient = mqtt.connect(`ws://localhost:${port}`);
   attachBusHandlers(busClient);
 };
 
-const applyBrokerSettings = (settings) => {
+const applyBrokerSettings = (settings: BrokerSettings | null | undefined) => {
   if (!settings) return;
   store.dispatch({
     type: "SETBROKERSETTINGS",
@@ -69,16 +70,19 @@ const Content = styled.div`
   overflow: scroll;
 `;
 
-export default () => {
-  const onDrop = useCallback((acceptedFiles) => {
-    const regex = /(?:\.([^.]+))?$/;
-    const ext = regex.exec(acceptedFiles[0].path);
+export default function App() {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0] as File & { path?: string };
+    if (!file?.path) return;
 
-    if (ext.includes("html")) {
-      busClient.publish("ragazzi/webapp/open", acceptedFiles[0].path);
+    const regex = /(?:\.([^.]+))?$/;
+    const ext = regex.exec(file.path);
+
+    if (ext?.includes("html")) {
+      busClient.publish("ragazzi/webapp/open", file.path);
     }
-    if (ext.includes("json") || ext.includes("ragazzi")) {
-      busClient.publish("ragazzi/project/open", acceptedFiles[0].path);
+    if (ext?.includes("json") || ext?.includes("ragazzi")) {
+      busClient.publish("ragazzi/project/open", file.path);
     }
   }, []);
   const { getRootProps } = useDropzone({ onDrop });
@@ -98,10 +102,10 @@ export default () => {
                 </Route>
               </Switch>
             </Content>
-            <Footer></Footer>
+            <Footer />
           </Container>
         </Router>
       </ThemeProvider>
     </StoreProvider>
   );
-};
+}

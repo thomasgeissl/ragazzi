@@ -1,8 +1,7 @@
 /**
  * Normalize a port-like value; fall back when invalid.
- * Keep in sync with public/ports.js (Electron main).
  */
-export function normalizePort(value, fallback) {
+export function normalizePort(value: unknown, fallback: number): number {
   const port = Number(value);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     return fallback;
@@ -10,11 +9,17 @@ export function normalizePort(value, fallback) {
   return port;
 }
 
+export type ValidateBrokerPortsResult =
+  | { ok: true; wsPort: number; tcpPort: number }
+  | { ok: false; error: string };
+
 /**
  * Validate WebSocket + TCP broker ports for the Home UI.
- * @returns {{ ok: true, wsPort: number, tcpPort: number } | { ok: false, error: string }}
  */
-export function validateBrokerPorts(wsPort, tcpPort) {
+export function validateBrokerPorts(
+  wsPort: unknown,
+  tcpPort: unknown
+): ValidateBrokerPortsResult {
   const nextWs = Number(wsPort);
   const nextTcp = Number(tcpPort);
 

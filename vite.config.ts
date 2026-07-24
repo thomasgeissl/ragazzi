@@ -17,17 +17,14 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.{js,jsx}", "public/**/*.test.js"],
+    include: ["src/**/*.test.{ts,tsx}"],
     pool: "forks",
     maxWorkers: "50%",
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
-      include: ["src/lib/**/*.js", "src/store/reducers/**/*.js", "public/ports.js"],
-      exclude: [
-        "src/**/*.test.{js,jsx}",
-        "public/**/*.test.js",
-      ],
+      include: ["src/lib/**/*.ts", "src/store/reducers/**/*.ts"],
+      exclude: ["src/**/*.test.{ts,tsx}"],
     },
   },
 });

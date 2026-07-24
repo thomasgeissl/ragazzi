@@ -1,5 +1,5 @@
-const path = require("path");
-const { test, expect, stubOpenDialog, ROOT } = require("./fixtures/electron");
+import path from "path";
+import { test, expect, stubOpenDialog, ROOT } from "./fixtures/electron";
 
 const PROJECT = path.join(ROOT, "example/multiple/index.ragazzi");
 

@@ -1,9 +1,17 @@
-// security find-identity -vp codesigning
-// https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
-require("dotenv").config();
-const { notarize } = require("@electron/notarize");
+import "dotenv/config";
+import { notarize } from "@electron/notarize";
 
-exports.default = async function notarizing(context) {
+interface NotarizeContext {
+  electronPlatformName: string;
+  appOutDir: string;
+  packager: {
+    appInfo: {
+      productFilename: string;
+    };
+  };
+}
+
+export default async function notarizing(context: NotarizeContext) {
   const { electronPlatformName, appOutDir } = context;
   if (electronPlatformName !== "darwin") {
     return;
@@ -33,4 +41,4 @@ exports.default = async function notarizing(context) {
     appleIdPassword,
     teamId,
   });
-};
+}

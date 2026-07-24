@@ -21,30 +21,41 @@ import { connect, getClient } from "../mqtt";
 
 import store from "../store";
 import { setConnected } from "../store/reducers/mqtt";
+import type { RootState } from "../store";
 
 setInterval(() => {
   store.dispatch(setConnected(getClient().connected));
 }, 3000);
 
-export default () => {
+export default function Broker() {
   const [protocol, setProtocol] = useState("ws");
   const [host, setHost] = useState("localhost");
-  const [port, setPort] = useState(9001);
-  const connected = useSelector((state) => state.mqtt.connected);
-  const connectedProtocol = useSelector((state) => state.mqtt.protocol);
-  const connectedHost = useSelector((state) => state.mqtt.host);
-  const connectedPort = useSelector((state) => state.mqtt.port);
-  const subscriptions = useSelector((state) => state.mqtt.subscriptions);
+  const [port, setPort] = useState<string | number>(9001);
+  const connected = useSelector((state: RootState) => state.mqtt.connected);
+  const connectedProtocol = useSelector(
+    (state: RootState) => state.mqtt.protocol
+  );
+  const connectedHost = useSelector((state: RootState) => state.mqtt.host);
+  const connectedPort = useSelector((state: RootState) => state.mqtt.port);
+  const subscriptions = useSelector(
+    (state: RootState) => state.mqtt.subscriptions
+  );
   const dispatch = useDispatch();
   const [expanded, setExpanded] = React.useState(false);
-  function handleClick(protocol, host, port) {
+
+  function handleClick(
+    nextProtocol: string,
+    nextHost: string,
+    nextPort: string | number
+  ) {
     [...subscriptions.keys()].forEach((key) => {
       getClient().unsubscribe(key);
     });
     dispatch(unsubscribeAll());
-    dispatch(setBroker(protocol, host, port));
-    connect(protocol, host, port);
+    dispatch(setBroker(nextProtocol, nextHost, Number(nextPort)));
+    connect(nextProtocol, nextHost, nextPort);
   }
+
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
@@ -56,22 +67,25 @@ export default () => {
           <Box sx={{ color: "success.main", display: "flex" }}>
             <CheckIcon />
           </Box>
-          <Typography component="h3" variant="h6" sx={{ color: "success.main" }}>
+          <Typography
+            component="h3"
+            variant="h6"
+            sx={{ color: "success.main" }}
+          >
             connected to broker
           </Typography>
         </Box>
       );
-    else
-      return (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box sx={{ color: "primary.main", display: "flex" }}>
-            <BlockIcon />
-          </Box>
-          <Typography component="h3" variant="h6" sx={{ color: "primary.main" }}>
-            no connection to broker
-          </Typography>
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ color: "primary.main", display: "flex" }}>
+          <BlockIcon />
         </Box>
-      );
+        <Typography component="h3" variant="h6" sx={{ color: "primary.main" }}>
+          no connection to broker
+        </Typography>
+      </Box>
+    );
   }
 
   return (
@@ -101,8 +115,7 @@ export default () => {
             container
             spacing={3}
             direction="row"
-            justifyContent="space-between"
-            alignItems="center"
+            sx={{ justifyContent: "space-between", alignItems: "center" }}
           >
             <Grid container spacing={3} size={9}>
               <Grid size={2}>
@@ -140,7 +153,7 @@ export default () => {
                   connected &&
                   protocol === connectedProtocol &&
                   host === connectedHost &&
-                  port === connectedPort
+                  Number(port) === connectedPort
                 }
                 variant="contained"
                 color="primary"
@@ -155,4 +168,4 @@ export default () => {
       </Collapse>
     </Card>
   );
-};
+}

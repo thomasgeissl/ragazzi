@@ -11,12 +11,15 @@ import Typography from "@mui/material/Typography";
 import { getClient } from "../mqtt";
 
 import { subscribe, unsubscribe } from "../store/reducers/mqtt";
+import type { RootState } from "../store";
 
-export default () => {
-  const subscriptions = useSelector((state) => state.mqtt.subscriptions);
+export default function Subscriptions() {
+  const subscriptions = useSelector(
+    (state: RootState) => state.mqtt.subscriptions
+  );
   const dispatch = useDispatch();
 
-  const toggleSubscription = (key) => {
+  const toggleSubscription = (key: string) => {
     return () => {
       if (subscriptions.get(key)) {
         getClient().unsubscribe(key);
@@ -41,8 +44,8 @@ export default () => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={subscriptions.get(key)}
-                      onChange={(event) => toggleSubscription(key)()}
+                      checked={Boolean(subscriptions.get(key))}
+                      onChange={() => toggleSubscription(key)()}
                       name={key}
                       color="primary"
                     />
@@ -56,4 +59,4 @@ export default () => {
       </CardContent>
     </Card>
   );
-};
+}

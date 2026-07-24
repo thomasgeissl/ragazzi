@@ -30,21 +30,27 @@ import {
 import { getClient } from "../mqtt";
 import Subscriber from "./Subscriber";
 import Subscriptions from "./Subscriptions";
+import type { RootState } from "../store";
 
 const StyledTable = styled(Table)`
   overflow-wrap: break-word;
 `;
 
-export default () => {
-  const receivedMessages = useSelector((state) => state.mqtt.receivedMessages);
-  const sentMessages = useSelector((state) => state.mqtt.sentMessages);
+export default function Logger() {
+  const receivedMessages = useSelector(
+    (state: RootState) => state.mqtt.receivedMessages
+  );
+  const sentMessages = useSelector(
+    (state: RootState) => state.mqtt.sentMessages
+  );
   const showSubscriptions = useSelector(isSubscriptionListShown);
   const messages = [...receivedMessages, ...sentMessages].sort((a, b) => {
     return compare(a.timestamp, b.timestamp);
   });
   const [topicFilter, setTopicFilter] = useState("");
   const dispatch = useDispatch();
-  function sendMessage(topic, message) {
+
+  function sendMessage(topic: string, message: string) {
     dispatch(addSentMessage(topic, message));
     return getClient().publish(topic, message);
   }
@@ -148,4 +154,4 @@ export default () => {
       </AccordionDetails>
     </Accordion>
   );
-};
+}

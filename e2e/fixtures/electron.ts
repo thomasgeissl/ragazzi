@@ -1,15 +1,25 @@
-const { test as base, expect, _electron as electron } = require("@playwright/test");
-const path = require("path");
-const net = require("net");
-const electronPath = require("electron");
+import {
+  test as base,
+  expect,
+  _electron as electron,
+  type ElectronApplication,
+  type Page,
+} from "@playwright/test";
+import path from "path";
+import net from "net";
+import { fileURLToPath } from "url";
+import electronPath from "electron";
 
-const ROOT = path.join(__dirname, "..");
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 /** Default broker ports ragazzi binds on startup. */
-const DEFAULT_WS_PORT = 9001;
-const DEFAULT_TCP_PORT = 1883;
+export const DEFAULT_WS_PORT = 9001;
+export const DEFAULT_TCP_PORT = 1883;
 
-function waitForPort(port, { host = "127.0.0.1", timeoutMs = 20_000 } = {}) {
+export function waitForPort(
+  port: number,
+  { host = "127.0.0.1", timeoutMs = 20_000 }: { host?: string; timeoutMs?: number } = {}
+): Promise<void> {
   const started = Date.now();
   return new Promise((resolve, reject) => {
     const tryConnect = () => {
@@ -32,10 +42,11 @@ function waitForPort(port, { host = "127.0.0.1", timeoutMs = 20_000 } = {}) {
 
 /**
  * Stub Electron's native open dialog so tests stay headless/deterministic.
- * @param {import('@playwright/test').ElectronApplication} electronApp
- * @param {string[]} filePaths
  */
-async function stubOpenDialog(electronApp, filePaths) {
+export async function stubOpenDialog(
+  electronApp: ElectronApplication,
+  filePaths: string[]
+): Promise<void> {
   await electronApp.evaluate(({ dialog }, paths) => {
     dialog.showOpenDialog = async () => ({
       canceled: false,
@@ -44,7 +55,12 @@ async function stubOpenDialog(electronApp, filePaths) {
   }, filePaths);
 }
 
-const test = base.extend({
+type ElectronFixtures = {
+  electronApp: ElectronApplication;
+  window: Page;
+};
+
+export const test = base.extend<ElectronFixtures>({
   electronApp: async ({}, use) => {
     const env = { ...process.env };
     // Cursor/IDE may set this; it breaks launching the Electron binary.
@@ -54,7 +70,7 @@ const test = base.extend({
     delete env.RAGAZZI_TCP_PORT;
 
     const app = await electron.launch({
-      executablePath: electronPath,
+      executablePath: String(electronPath),
       args: [ROOT, "--no-sandbox"],
       env,
       timeout: 60_000,
@@ -73,12 +89,4 @@ const test = base.extend({
   },
 });
 
-module.exports = {
-  test,
-  expect,
-  stubOpenDialog,
-  waitForPort,
-  ROOT,
-  DEFAULT_WS_PORT,
-  DEFAULT_TCP_PORT,
-};
+export { expect, ROOT };

@@ -2,9 +2,10 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useSelector } from "react-redux";
+import type { RootState } from "../store";
 
-export default () => {
-  const version = useSelector((state) => state.system.version);
+export default function Footer() {
+  const version = useSelector((state: RootState) => state.system.version);
 
   return (
     <footer style={{ width: "100%" }}>
@@ -46,4 +47,4 @@ export default () => {
       </Box>
     </footer>
   );
-};
+}

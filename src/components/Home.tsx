@@ -21,11 +21,12 @@ import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 
 import { getClient } from "../mqtt";
 import { validateBrokerPorts } from "../lib/ports";
+import type { RootState } from "../store";
 
-export default () => {
+export default function Home() {
   const dispatch = useDispatch();
-  const config = useSelector((state) => state.system.config);
-  const broker = useSelector((state) => state.system.broker);
+  const config = useSelector((state: RootState) => state.system.config);
+  const broker = useSelector((state: RootState) => state.system.broker);
   const [brokerBusy, setBrokerBusy] = useState(false);
   const [wsPortDraft, setWsPortDraft] = useState(String(broker.wsPort));
   const [tcpPortDraft, setTcpPortDraft] = useState(String(broker.tcpPort));
@@ -57,7 +58,9 @@ export default () => {
     });
   }, [dispatch]);
 
-  const handleBrokerToggle = async (event) => {
+  const handleBrokerToggle = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const api = window.ragazzi?.broker;
     if (!api || brokerBusy) return;
 
@@ -78,10 +81,7 @@ export default () => {
         return;
       }
 
-      if (
-        ports.wsPort !== broker.wsPort ||
-        ports.tcpPort !== broker.tcpPort
-      ) {
+      if (ports.wsPort !== broker.wsPort || ports.tcpPort !== broker.tcpPort) {
         await api.setPorts({
           wsPort: ports.wsPort,
           tcpPort: ports.tcpPort,
@@ -91,13 +91,16 @@ export default () => {
       const settings = await api.start();
       dispatch({ type: "SETBROKERSETTINGS", payload: { value: settings } });
     } catch (err) {
-      setPortError(err?.message || "Could not update broker.");
+      const message = err instanceof Error ? err.message : "Could not update broker.";
+      setPortError(message);
     } finally {
       setBrokerBusy(false);
     }
   };
 
   const hasBrokerApi = Boolean(window.ragazzi?.broker);
+  const views = config.views ?? [];
+  const externalViews = config.externalViews ?? [];
 
   return (
     <Container>
@@ -144,7 +147,7 @@ export default () => {
                     value={wsPortDraft}
                     onChange={(event) => setWsPortDraft(event.target.value)}
                     disabled={brokerBusy || !hasBrokerApi}
-                    inputProps={{ min: 1, max: 65535 }}
+                    slotProps={{ htmlInput: { min: 1, max: 65535 } }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -156,7 +159,7 @@ export default () => {
                     value={tcpPortDraft}
                     onChange={(event) => setTcpPortDraft(event.target.value)}
                     disabled={brokerBusy || !hasBrokerApi}
-                    inputProps={{ min: 1, max: 65535 }}
+                    slotProps={{ htmlInput: { min: 1, max: 65535 } }}
                   />
                 </Grid>
               </Grid>
@@ -166,8 +169,7 @@ export default () => {
               <Typography
                 variant="caption"
                 color="error"
-                display="block"
-                sx={{ mb: 1 }}
+                sx={{ display: "block", mb: 1 }}
               >
                 {portError}
               </Typography>
@@ -192,7 +194,7 @@ export default () => {
           </CardContent>
         </Card>
 
-        {(!config || !config.views || config.views.length === 0) && (
+        {views.length === 0 && (
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
@@ -215,10 +217,8 @@ export default () => {
           </Box>
         )}
 
-        {config &&
-          Object.entries(config).length > 0 &&
-          config.views &&
-          (config.views.length > 0 || config.externalViews.length > 0) && (
+        {Object.entries(config).length > 0 &&
+          (views.length > 0 || externalViews.length > 0) && (
             <Grid container spacing={2}>
               <Grid size={6}>
                 <Card>
@@ -266,27 +266,24 @@ export default () => {
                     </Typography>
                     <Typography variant="body1" component="div">
                       <List>
-                        {config.views &&
-                          config.views.map((view, index) => {
-                            return (
-                              <ListItem key={index}>
-                                <ListItemIcon sx={{ minWidth: "36px" }}>
-                                  <DesktopWindowsIcon />
-                                </ListItemIcon>
-                                <a
-                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  {view.title}
-                                </a>
-                              </ListItem>
-                            );
-                          })}
-                        {config &&
-                          Object.entries(config).length !== 0 &&
-                          config.externalViews &&
-                          config.externalViews.map((view, index) => {
+                        {views.map((view, index) => {
+                          return (
+                            <ListItem key={index}>
+                              <ListItemIcon sx={{ minWidth: "36px" }}>
+                                <DesktopWindowsIcon />
+                              </ListItemIcon>
+                              <a
+                                href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {view.title}
+                              </a>
+                            </ListItem>
+                          );
+                        })}
+                        {Object.entries(config).length !== 0 &&
+                          externalViews.map((view, index) => {
                             return (
                               <ListItem key={index}>
                                 <ListItemIcon sx={{ minWidth: "36px" }}>
@@ -324,4 +321,4 @@ export default () => {
       </Box>
     </Container>
   );
-};
+}

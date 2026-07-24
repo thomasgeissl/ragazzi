@@ -16,13 +16,13 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { addSentMessage } from "../store/reducers/mqtt";
 import { getClient } from "../mqtt";
 
-const EMPTY_JSON = {};
+const EMPTY_JSON: Record<string, unknown> = {};
 
-export default () => {
+export default function Publisher() {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
-  const [jsonData, setJsonData] = useState(EMPTY_JSON);
-  const [format, setFormat] = useState("raw");
+  const [jsonData, setJsonData] = useState<unknown>(EMPTY_JSON);
+  const [format, setFormat] = useState<"raw" | "json">("raw");
   const dispatch = useDispatch();
 
   function payloadForPublish() {
@@ -32,13 +32,16 @@ export default () => {
     return message;
   }
 
-  function handleClick(topic) {
+  function handleClick(nextTopic: string) {
     const payload = payloadForPublish();
-    dispatch(addSentMessage(topic, payload));
-    return getClient().publish(topic, payload);
+    dispatch(addSentMessage(nextTopic, payload));
+    return getClient().publish(nextTopic, payload);
   }
 
-  function handleFormatChange(_, next) {
+  function handleFormatChange(
+    _: React.MouseEvent<HTMLElement>,
+    next: "raw" | "json" | null
+  ) {
     if (!next) return;
 
     if (next === "json" && format === "raw") {
@@ -140,4 +143,4 @@ export default () => {
       </AccordionDetails>
     </Accordion>
   );
-};
+}

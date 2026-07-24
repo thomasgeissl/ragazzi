@@ -43,7 +43,7 @@ Reuse the same values from gsc-app / NeopixelBlocks if those repos already have 
 
 ## Tests
 
-Unit tests use [Vitest](https://vitest.dev/) (co-located `src/**/*.test.js`):
+Unit tests use [Vitest](https://vitest.dev/) (co-located `src/**/*.test.ts`):
 
 - `npm test` — run once
 - `npm run test:watch` — watch mode

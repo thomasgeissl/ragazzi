@@ -5,9 +5,17 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
 
 # production
 /build
+
+# Generated Electron / notarize entrypoints (from *.ts via build:electron)
+/public/electron.js
+/public/preload.js
+/scripts/notarize.js
 
 # misc
 .DS_Store

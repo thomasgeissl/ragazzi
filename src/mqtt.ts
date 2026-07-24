@@ -1,24 +1,28 @@
-import mqtt from "mqtt";
+import mqtt, { type MqttClient } from "mqtt";
 import store from "./store";
 import { addReceivedMessage, setBroker } from "./store/reducers/mqtt";
 
-let client = mqtt.connect("ws://localhost:9001");
-let secondClient = null;
+let client: MqttClient = mqtt.connect("ws://localhost:9001");
+let secondClient: MqttClient | null = null;
 let localWsPort = 9001;
 
-const attachMessageHandler = (mqttClient) => {
-  mqttClient.on("message", function (topic, message) {
+const attachMessageHandler = (mqttClient: MqttClient) => {
+  mqttClient.on("message", (topic, message) => {
     store.dispatch(addReceivedMessage(topic, message.toString()));
   });
 };
 
 attachMessageHandler(client);
 
-const getClient = () => {
+export const getClient = (): MqttClient => {
   return secondClient ? secondClient : client;
 };
 
-const connect = (protocol, host, port) => {
+export const connect = (
+  protocol: string,
+  host: string,
+  port: string | number
+): MqttClient => {
   if (secondClient) {
     secondClient.end();
   }
@@ -28,7 +32,7 @@ const connect = (protocol, host, port) => {
   return secondClient;
 };
 
-const reconnectLocal = (wsPort) => {
+export const reconnectLocal = (wsPort: number | string): MqttClient => {
   const port = Number(wsPort) || 9001;
   if (port === localWsPort && client && !secondClient) {
     return client;
@@ -36,7 +40,7 @@ const reconnectLocal = (wsPort) => {
   localWsPort = port;
   try {
     client.end(true);
-  } catch (err) {
+  } catch {
     // ignore disconnect errors while reconnecting
   }
   client = mqtt.connect(`ws://localhost:${port}`);
@@ -46,7 +50,5 @@ const reconnectLocal = (wsPort) => {
   }
   return client;
 };
-
-export { getClient, connect, reconnectLocal };
 
 export default client;
