@@ -29,11 +29,14 @@ export interface RagazziBrokerApi {
   onSettings: (callback: (settings: BrokerSettings) => void) => () => void;
 }
 
+export interface RagazziApi {
+  broker: RagazziBrokerApi;
+  openExternal: (url: string) => Promise<void>;
+}
+
 declare global {
   interface Window {
-    ragazzi?: {
-      broker: RagazziBrokerApi;
-    };
+    ragazzi?: RagazziApi;
     __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof import("redux").compose;
   }
 }

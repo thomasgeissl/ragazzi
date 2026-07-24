@@ -8,6 +8,7 @@ import {
   ipcMain,
   Menu,
   type MenuItemConstructorOptions,
+  shell,
 } from "electron";
 import fs from "fs";
 import http from "http";
@@ -19,6 +20,7 @@ import portscanner from "portscanner";
 import url from "url";
 import ws from "websocket-stream";
 import { normalizePort } from "../src/lib/ports";
+import { checkForUpdate, RELEASES_URL } from "../src/lib/updates";
 import type { BrokerSettings, ProjectConfig, ProjectView } from "../src/types/ragazzi";
 
 const isDev = !app.isPackaged;
@@ -266,6 +268,13 @@ ipcMain.handle(
   },
 );
 
+ipcMain.handle("shell:openExternal", async (_event, targetUrl: unknown) => {
+  if (typeof targetUrl !== "string" || !/^https?:\/\//i.test(targetUrl)) {
+    throw new Error("Invalid URL");
+  }
+  await shell.openExternal(targetUrl);
+});
+
 const startExternalWebserver = (fromPort: number, attemptsLeft = 100) => {
   if (attemptsLeft <= 0) {
     console.error("could not bind external http server");
@@ -473,6 +482,15 @@ const openProject = (file: string) => {
 };
 
 function createWindow() {
+  const showUpdateDialog = async (
+    options: Electron.MessageBoxOptions,
+  ): Promise<Electron.MessageBoxReturnValue> => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      return dialog.showMessageBox(mainWindow, options);
+    }
+    return dialog.showMessageBox(options);
+  };
+
   const template: MenuItemConstructorOptions[] = [
     ...(isMac
       ? [
@@ -565,10 +583,55 @@ function createWindow() {
       role: "help",
       submenu: [
         {
-          label: "Learn More",
+          label: "Check for Updates…",
           click: async () => {
-            const { shell } = await import("electron");
-            await shell.openExternal("https://electronjs.org");
+            const result = await checkForUpdate(app.getVersion());
+
+            if (result.status === "update-available") {
+              const { response } = await showUpdateDialog({
+                type: "info",
+                buttons: ["Open Releases", "Later"],
+                defaultId: 0,
+                cancelId: 1,
+                title: "Update available",
+                message: `ragazzi ${result.latestVersion} is available.`,
+                detail: `You are running ${result.currentVersion}.`,
+              });
+              if (response === 0) {
+                await shell.openExternal(result.releaseUrl);
+              }
+              return;
+            }
+
+            if (result.status === "up-to-date") {
+              await showUpdateDialog({
+                type: "info",
+                buttons: ["OK"],
+                defaultId: 0,
+                title: "Up to date",
+                message: `ragazzi ${result.currentVersion} is the latest release.`,
+              });
+              return;
+            }
+
+            const { response } = await showUpdateDialog({
+              type: "warning",
+              buttons: ["Open Releases", "OK"],
+              defaultId: 0,
+              cancelId: 1,
+              title: "Update check failed",
+              message: "Could not check for updates.",
+              detail: result.error,
+            });
+            if (response === 0) {
+              await shell.openExternal(result.releaseUrl);
+            }
+          },
+        },
+        {
+          label: "Releases",
+          click: async () => {
+            await shell.openExternal(RELEASES_URL);
           },
         },
       ],

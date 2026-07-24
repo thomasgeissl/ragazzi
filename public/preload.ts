@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld("ragazzi", {
       return () => ipcRenderer.removeListener("broker:settings", handler);
     },
   },
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke("shell:openExternal", url),
 });
