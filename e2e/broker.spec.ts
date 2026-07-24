@@ -1,17 +1,9 @@
 /// <reference path="../src/types/ragazzi.d.ts" />
 
-import {
-  test,
-  expect,
-  waitForPort,
-  DEFAULT_WS_PORT,
-  DEFAULT_TCP_PORT,
-} from "./fixtures/electron";
 import type { BrokerSettings } from "../src/types/ragazzi";
+import { DEFAULT_TCP_PORT, DEFAULT_WS_PORT, expect, test, waitForPort } from "./fixtures/electron";
 
-test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
-  window: page,
-}) => {
+test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({ window: page }) => {
   await expect(page.getByRole("switch")).toBeChecked();
   await expect(page.getByText("on", { exact: true })).toBeVisible();
 
@@ -31,10 +23,6 @@ test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
     tcpPort: DEFAULT_TCP_PORT,
   });
 
-  await expect(
-    page.getByText(String(DEFAULT_WS_PORT), { exact: false })
-  ).toBeVisible();
-  await expect(
-    page.getByText(String(DEFAULT_TCP_PORT), { exact: false })
-  ).toBeVisible();
+  await expect(page.getByText(String(DEFAULT_WS_PORT), { exact: false })).toBeVisible();
+  await expect(page.getByText(String(DEFAULT_TCP_PORT), { exact: false })).toBeVisible();
 });

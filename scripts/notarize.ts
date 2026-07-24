@@ -25,8 +25,7 @@ export default async function notarizing(context: NotarizeContext) {
   const teamId = process.env.APPLE_TEAM_ID;
 
   if (!appleId || !appleIdPassword || !teamId) {
-    const message =
-      "Missing APPLE_ID, APPLE_PASSWORD (or APPLE_APP_PASS), or APPLE_TEAM_ID";
+    const message = "Missing APPLE_ID, APPLE_PASSWORD (or APPLE_APP_PASS), or APPLE_TEAM_ID";
     if (process.env.CI || process.env.GITHUB_ACTIONS) {
       throw new Error(`Notarization required in CI: ${message}`);
     }

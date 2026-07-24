@@ -1,19 +1,17 @@
+import styled from "@emotion/styled";
+import { ThemeProvider } from "@mui/material/styles";
+import mqtt, { type MqttClient } from "mqtt";
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Provider as StoreProvider } from "react-redux";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import styled from "@emotion/styled";
-import mqtt, { type MqttClient } from "mqtt";
-
-import Home from "./components/Home";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Dev from "./components/Dev";
 import Footer from "./components/Footer";
-
-import { ThemeProvider } from "@mui/material/styles";
-import theme from "./theme";
+import Home from "./components/Home";
+import { reconnectLocal } from "./mqtt";
 
 import store from "./store";
-import { reconnectLocal } from "./mqtt";
+import theme from "./theme";
 import type { BrokerSettings } from "./types/ragazzi";
 
 let busClient: MqttClient = mqtt.connect("ws://localhost:9001");

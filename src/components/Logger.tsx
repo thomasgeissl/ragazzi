@@ -1,48 +1,39 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { format } from "date-fns";
-import compare from "date-fns/compareDesc";
 import styled from "@emotion/styled";
-
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
+import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Typography from "@mui/material/Typography";
+import SendIcon from "@mui/icons-material/Send";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import CallReceivedIcon from "@mui/icons-material/CallReceived";
-import SendIcon from "@mui/icons-material/Send";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import store from "../store/index";
-import {
-  clearMessages,
-  addSentMessage,
-  isSubscriptionListShown,
-} from "../store/reducers/mqtt";
+import Typography from "@mui/material/Typography";
+import { format } from "date-fns";
+import compare from "date-fns/compareDesc";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { getClient } from "../mqtt";
+import type { RootState } from "../store";
+import store from "../store/index";
+import { addSentMessage, clearMessages, isSubscriptionListShown } from "../store/reducers/mqtt";
 import Subscriber from "./Subscriber";
 import Subscriptions from "./Subscriptions";
-import type { RootState } from "../store";
 
 const StyledTable = styled(Table)`
   overflow-wrap: break-word;
 `;
 
 export default function Logger() {
-  const receivedMessages = useSelector(
-    (state: RootState) => state.mqtt.receivedMessages
-  );
-  const sentMessages = useSelector(
-    (state: RootState) => state.mqtt.sentMessages
-  );
+  const receivedMessages = useSelector((state: RootState) => state.mqtt.receivedMessages);
+  const sentMessages = useSelector((state: RootState) => state.mqtt.sentMessages);
   const showSubscriptions = useSelector(isSubscriptionListShown);
   const messages = [...receivedMessages, ...sentMessages].sort((a, b) => {
     return compare(a.timestamp, b.timestamp);
@@ -62,9 +53,7 @@ export default function Logger() {
           subscribe
         </Typography>
       </AccordionSummary>
-      <AccordionDetails
-        sx={{ px: 2, pt: 1, pb: 2, width: "100%", boxSizing: "border-box" }}
-      >
+      <AccordionDetails sx={{ px: 2, pt: 1, pb: 2, width: "100%", boxSizing: "border-box" }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
           <Subscriber />
           {showSubscriptions && <Subscriptions />}
@@ -98,11 +87,7 @@ export default function Logger() {
             clear
           </Button>
         </Box>
-        <TableContainer
-          component={Paper}
-          sx={{ overflow: "auto", width: "100%" }}
-          elevation={0}
-        >
+        <TableContainer component={Paper} sx={{ overflow: "auto", width: "100%" }} elevation={0}>
           <StyledTable size="small">
             <TableHead>
               <TableRow>
@@ -122,10 +107,7 @@ export default function Logger() {
             </TableHead>
             <TableBody>
               {messages
-                .filter(
-                  (message) =>
-                    topicFilter === "" || message.topic.includes(topicFilter)
-                )
+                .filter((message) => topicFilter === "" || message.topic.includes(topicFilter))
                 .map((message, index) => {
                   return (
                     <TableRow key={index}>
@@ -142,9 +124,7 @@ export default function Logger() {
                       </TableCell>
                       <TableCell>{message.topic}</TableCell>
                       <TableCell>{message.message}</TableCell>
-                      <TableCell>
-                        {format(message.timestamp, "HH:mm:ss")}
-                      </TableCell>
+                      <TableCell>{format(message.timestamp, "HH:mm:ss")}</TableCell>
                     </TableRow>
                   );
                 })}

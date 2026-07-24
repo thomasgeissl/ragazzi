@@ -1,6 +1,6 @@
-import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import React from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 

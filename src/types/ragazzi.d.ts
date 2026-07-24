@@ -25,10 +25,7 @@ export interface RagazziBrokerApi {
   start: () => Promise<BrokerSettings>;
   stop: () => Promise<BrokerSettings>;
   getSettings: () => Promise<BrokerSettings>;
-  setPorts: (ports: {
-    wsPort?: number;
-    tcpPort?: number;
-  }) => Promise<BrokerSettings>;
+  setPorts: (ports: { wsPort?: number; tcpPort?: number }) => Promise<BrokerSettings>;
   onSettings: (callback: (settings: BrokerSettings) => void) => () => void;
 }
 
@@ -40,5 +37,3 @@ declare global {
     __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof import("redux").compose;
   }
 }
-
-export {};

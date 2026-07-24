@@ -16,10 +16,7 @@ export type ValidateBrokerPortsResult =
 /**
  * Validate WebSocket + TCP broker ports for the Home UI.
  */
-export function validateBrokerPorts(
-  wsPort: unknown,
-  tcpPort: unknown
-): ValidateBrokerPortsResult {
+export function validateBrokerPorts(wsPort: unknown, tcpPort: unknown): ValidateBrokerPortsResult {
   const nextWs = Number(wsPort);
   const nextTcp = Number(tcpPort);
 

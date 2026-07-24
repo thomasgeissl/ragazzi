@@ -1,6 +1,6 @@
-import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { defineConfig } from "vitest/config";
 
 const isVitest = !!process.env.VITEST;
 

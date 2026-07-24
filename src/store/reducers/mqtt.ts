@@ -113,14 +113,10 @@ export type MqttAction =
   | ReturnType<typeof unsubscribeAll>
   | ReturnType<typeof clearMessages>;
 
-export default (
-  state: MqttState = defaultState,
-  action: MqttAction | AnyAction
-): MqttState => {
+export default (state: MqttState = defaultState, action: MqttAction | AnyAction): MqttState => {
   switch (action.type) {
     case types.SETBROKER: {
-      const { protocol, host, port } = (action as ReturnType<typeof setBroker>)
-        .payload;
+      const { protocol, host, port } = (action as ReturnType<typeof setBroker>).payload;
       return {
         ...state,
         protocol: protocol.trim(),
@@ -162,10 +158,7 @@ export default (
     }
     case types.ADDSUBSCRIPTION: {
       const subscriptions = new Map(state.subscriptions);
-      subscriptions.set(
-        (action as ReturnType<typeof addSubscription>).payload.value,
-        true
-      );
+      subscriptions.set((action as ReturnType<typeof addSubscription>).payload.value, true);
       return {
         ...state,
         subscriptions,
@@ -173,10 +166,7 @@ export default (
     }
     case types.SUBSCRIBE: {
       const subscriptions = new Map(state.subscriptions);
-      subscriptions.set(
-        (action as ReturnType<typeof subscribe>).payload.value,
-        true
-      );
+      subscriptions.set((action as ReturnType<typeof subscribe>).payload.value, true);
       return {
         ...state,
         subscriptions,
@@ -184,10 +174,7 @@ export default (
     }
     case types.UNSUBSCRIBE: {
       const subscriptions = new Map(state.subscriptions);
-      subscriptions.set(
-        (action as ReturnType<typeof unsubscribe>).payload.value,
-        false
-      );
+      subscriptions.set((action as ReturnType<typeof unsubscribe>).payload.value, false);
       return {
         ...state,
         subscriptions,
@@ -215,8 +202,6 @@ export default (
   }
 };
 
-export const isSubscriptionListShown = (state: {
-  mqtt: MqttState;
-}): boolean => {
+export const isSubscriptionListShown = (state: { mqtt: MqttState }): boolean => {
   return state.mqtt.subscriptions.size > 0;
 };

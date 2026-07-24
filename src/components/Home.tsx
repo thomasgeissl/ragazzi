@@ -1,26 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
-import Button from "@mui/material/Button";
+import CheckIcon from "@mui/icons-material/Check";
+import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
+import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import Container from "@mui/material/Container";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
 import Grid from "@mui/material/Grid";
-import CheckIcon from "@mui/icons-material/Check";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
-import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
-
-import { getClient } from "../mqtt";
+import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { validateBrokerPorts } from "../lib/ports";
+import { getClient } from "../mqtt";
 import type { RootState } from "../store";
 
 export default function Home() {
@@ -58,9 +57,7 @@ export default function Home() {
     });
   }, [dispatch]);
 
-  const handleBrokerToggle = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleBrokerToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const api = window.ragazzi?.broker;
     if (!api || brokerBusy) return;
 
@@ -166,11 +163,7 @@ export default function Home() {
             )}
 
             {portError && (
-              <Typography
-                variant="caption"
-                color="error"
-                sx={{ display: "block", mb: 1 }}
-              >
+              <Typography variant="caption" color="error" sx={{ display: "block", mb: 1 }}>
                 {portError}
               </Typography>
             )}
@@ -178,17 +171,13 @@ export default function Home() {
             <Typography variant="caption">
               {broker.running ? (
                 <>
-                  Your friendly mqtt broker is up and running at{" "}
-                  <b>{config.ip}</b>.
+                  Your friendly mqtt broker is up and running at <b>{config.ip}</b>.
                   <br />
-                  It communicates on ports <b>{broker.wsPort}</b> (ws) and{" "}
-                  <b>{broker.tcpPort}</b> (tcp).
+                  It communicates on ports <b>{broker.wsPort}</b> (ws) and <b>{broker.tcpPort}</b>{" "}
+                  (tcp).
                 </>
               ) : (
-                <>
-                  The mqtt broker is stopped. Set the ports above, then turn it
-                  on.
-                </>
+                <>The mqtt broker is stopped. Set the ports above, then turn it on.</>
               )}
             </Typography>
           </CardContent>
@@ -206,71 +195,80 @@ export default function Home() {
             >
               open project
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              component={Link}
-              to="/dev"
-            >
+            <Button variant="outlined" color="primary" component={Link} to="/dev">
               mqtt dev tools
             </Button>
           </Box>
         )}
 
-        {Object.entries(config).length > 0 &&
-          (views.length > 0 || externalViews.length > 0) && (
-            <Grid container spacing={2}>
-              <Grid size={6}>
-                <Card>
-                  <CardContent>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 2,
+        {Object.entries(config).length > 0 && (views.length > 0 || externalViews.length > 0) && (
+          <Grid container spacing={2}>
+            <Grid size={6}>
+              <Card>
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 2,
+                    }}
+                  >
+                    <Grid container spacing={1} sx={{ maxHeight: "24px" }}>
+                      <Grid>
+                        <Box sx={{ color: "success.main" }}>
+                          <CheckIcon />
+                        </Box>
+                      </Grid>
+                      <Grid>
+                        <Typography sx={{ color: "success.main" }}>project is hosted</Typography>
+                      </Grid>
+                    </Grid>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      type="button"
+                      onClick={() => {
+                        getClient().publish("ragazzi/project/close", "");
                       }}
                     >
-                      <Grid container spacing={1} sx={{ maxHeight: "24px" }}>
-                        <Grid>
-                          <Box sx={{ color: "success.main" }}>
-                            <CheckIcon />
-                          </Box>
-                        </Grid>
-                        <Grid>
-                          <Typography sx={{ color: "success.main" }}>
-                            project is hosted
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        type="button"
-                        onClick={() => {
-                          getClient().publish("ragazzi/project/close", "");
-                        }}
-                      >
-                        shutdown
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={6}>
-                <Card>
-                  <CardContent>
-                    <Typography color="text.primary" gutterBottom>
-                      <b>Views</b>
-                    </Typography>
-                    <Typography variant="body1" component="div">
-                      <List>
-                        {views.map((view, index) => {
+                      shutdown
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={6}>
+              <Card>
+                <CardContent>
+                  <Typography color="text.primary" gutterBottom>
+                    <b>Views</b>
+                  </Typography>
+                  <Typography variant="body1" component="div">
+                    <List>
+                      {views.map((view, index) => {
+                        return (
+                          <ListItem key={index}>
+                            <ListItemIcon sx={{ minWidth: "36px" }}>
+                              <DesktopWindowsIcon />
+                            </ListItemIcon>
+                            <a
+                              href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {view.title}
+                            </a>
+                          </ListItem>
+                        );
+                      })}
+                      {Object.entries(config).length !== 0 &&
+                        externalViews.map((view, index) => {
                           return (
                             <ListItem key={index}>
                               <ListItemIcon sx={{ minWidth: "36px" }}>
-                                <DesktopWindowsIcon />
+                                <PhoneAndroidIcon />
                               </ListItemIcon>
                               <a
                                 href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
@@ -282,42 +280,23 @@ export default function Home() {
                             </ListItem>
                           );
                         })}
-                        {Object.entries(config).length !== 0 &&
-                          externalViews.map((view, index) => {
-                            return (
-                              <ListItem key={index}>
-                                <ListItemIcon sx={{ minWidth: "36px" }}>
-                                  <PhoneAndroidIcon />
-                                </ListItemIcon>
-                                <a
-                                  href={`http://${config.ip}:${config.internalHttpPort}/${view.path}?broker=${config.ip}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  {view.title}
-                                </a>
-                              </ListItem>
-                            );
-                          })}
-                      </List>
-                      <Typography variant="caption">
-                        On external devices navigate to
-                        <b>
-                          {" "}
-                          {`http://${config.ip}${
-                            config.externalHttpPort !== 80
-                              ? ":" + config.externalHttpPort
-                              : ""
-                          }`}{" "}
-                        </b>
-                        and select the corresponding view.
-                      </Typography>
+                    </List>
+                    <Typography variant="caption">
+                      On external devices navigate to
+                      <b>
+                        {" "}
+                        {`http://${config.ip}${
+                          config.externalHttpPort !== 80 ? ":" + config.externalHttpPort : ""
+                        }`}{" "}
+                      </b>
+                      and select the corresponding view.
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+                  </Typography>
+                </CardContent>
+              </Card>
             </Grid>
-          )}
+          </Grid>
+        )}
       </Box>
     </Container>
   );

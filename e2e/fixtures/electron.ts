@@ -1,12 +1,12 @@
 import {
   test as base,
-  expect,
-  _electron as electron,
   type ElectronApplication,
+  _electron as electron,
+  expect,
   type Page,
 } from "@playwright/test";
-import net from "net";
 import electronPath from "electron";
+import net from "net";
 
 /** Project root — npm scripts run Playwright with cwd at the repo root. */
 const ROOT = process.cwd();
@@ -17,7 +17,7 @@ export const DEFAULT_TCP_PORT = 1883;
 
 export function waitForPort(
   port: number,
-  { host = "127.0.0.1", timeoutMs = 20_000 }: { host?: string; timeoutMs?: number } = {}
+  { host = "127.0.0.1", timeoutMs = 20_000 }: { host?: string; timeoutMs?: number } = {},
 ): Promise<void> {
   const started = Date.now();
   return new Promise((resolve, reject) => {
@@ -44,7 +44,7 @@ export function waitForPort(
  */
 export async function stubOpenDialog(
   electronApp: ElectronApplication,
-  filePaths: string[]
+  filePaths: string[],
 ): Promise<void> {
   await electronApp.evaluate(({ dialog }, paths) => {
     dialog.showOpenDialog = async () => ({
@@ -60,7 +60,7 @@ type ElectronFixtures = {
 };
 
 export const test = base.extend<ElectronFixtures>({
-  electronApp: async ({}, use) => {
+  electronApp: async (_fixtures, use) => {
     const env = { ...process.env };
     // Cursor/IDE may set this; it breaks launching the Electron binary.
     delete env.ELECTRON_RUN_AS_NODE;
@@ -72,9 +72,7 @@ export const test = base.extend<ElectronFixtures>({
       executablePath: String(electronPath),
       args: [ROOT, "--no-sandbox"],
       env: Object.fromEntries(
-        Object.entries(env).filter(
-          (entry): entry is [string, string] => entry[1] !== undefined
-        )
+        Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined),
       ),
       timeout: 60_000,
     });

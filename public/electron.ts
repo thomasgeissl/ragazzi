@@ -1,23 +1,23 @@
+import { Aedes } from "aedes";
+import stats from "aedes-stats";
 import {
   app,
   BrowserWindow,
-  dialog,
-  Menu,
-  ipcMain,
-  type MenuItemConstructorOptions,
   type BrowserWindowConstructorOptions,
+  dialog,
+  ipcMain,
+  Menu,
+  type MenuItemConstructorOptions,
 } from "electron";
-import os from "os";
 import fs from "fs";
-import path from "path";
 import http from "http";
-import portscanner from "portscanner";
-import url from "url";
 import mqtt, { type MqttClient } from "mqtt";
 import net from "net";
+import os from "os";
+import path from "path";
+import portscanner from "portscanner";
+import url from "url";
 import ws from "websocket-stream";
-import { Aedes } from "aedes";
-import stats from "aedes-stats";
 import { normalizePort } from "../src/lib/ports";
 import type { BrokerSettings, ProjectConfig, ProjectView } from "../src/types/ragazzi";
 
@@ -95,7 +95,7 @@ const publishBrokerSettings = () => {
       JSON.stringify({
         type: "SETBROKERSETTINGS",
         payload: { value: settings },
-      })
+      }),
     );
   }
 };
@@ -222,11 +222,7 @@ const stopBroker = (): Promise<BrokerSettings> =>
         setTimeout(res, 1000);
       });
 
-    Promise.all([
-      endMqtt(),
-      closeServer(tcpServer),
-      closeServer(wsServer),
-    ]).then(finish);
+    Promise.all([endMqtt(), closeServer(tcpServer), closeServer(wsServer)]).then(finish);
   });
 
 ipcMain.handle("broker:start", async () => {
@@ -267,7 +263,7 @@ ipcMain.handle(
     }
 
     return getBrokerSettings();
-  }
+  },
 );
 
 portscanner.findAPortNotInUse(
@@ -307,11 +303,10 @@ portscanner.findAPortNotInUse(
         res.end();
       })
       .listen(externalHttpPort);
-  }
+  },
 );
 
-const parameterAppendix =
-  ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
+const parameterAppendix = ipAddresses.length > 0 ? `?broker=${ipAddresses[0]}` : "";
 
 const publishConfig = () => {
   if (!mqttClient || !brokerRunning) return;
@@ -356,7 +351,7 @@ const createInternalWebserver = (dir: string) => {
           });
         })
         .listen(internalHttpPort);
-    }
+    },
   );
 };
 
@@ -385,10 +380,7 @@ const openProjectChooser = () => {
   });
 };
 
-const addWindow = (
-  targetUrl: string,
-  opts?: BrowserWindowConstructorOptions
-) => {
+const addWindow = (targetUrl: string, opts?: BrowserWindowConstructorOptions) => {
   const win = new BrowserWindow({
     ...(iconPath ? { icon: iconPath } : {}),
     ...(opts ?? {}),
@@ -403,15 +395,11 @@ const openWebsite = (dir: string, fileRelative: string) => {
     internalWebserver.close(() => {
       internalWebserver = null;
       createInternalWebserver(dir);
-      addWindow(
-        `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
-      );
+      addWindow(`http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`);
     });
   } else {
     createInternalWebserver(dir);
-    addWindow(
-      `http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`
-    );
+    addWindow(`http://localhost:${internalHttpPort}/${fileRelative}${parameterAppendix}`);
   }
 };
 
@@ -519,10 +507,7 @@ function createWindow() {
               { type: "separator" as const },
               {
                 label: "Speech",
-                submenu: [
-                  { role: "startSpeaking" as const },
-                  { role: "stopSpeaking" as const },
-                ],
+                submenu: [{ role: "startSpeaking" as const }, { role: "stopSpeaking" as const }],
               },
             ]
           : [
@@ -595,7 +580,7 @@ function createWindow() {
   mainWindow.loadURL(
     isDev && !isE2E
       ? "http://localhost:3000"
-      : `file://${path.join(__dirname, "../build/index.html")}`
+      : `file://${path.join(__dirname, "../build/index.html")}`,
   );
 }
 

@@ -1,27 +1,24 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
+import BlockIcon from "@mui/icons-material/Block";
+import CheckIcon from "@mui/icons-material/Check";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Collapse from "@mui/material/Collapse";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CheckIcon from "@mui/icons-material/Check";
-import BlockIcon from "@mui/icons-material/Block";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Divider from "@mui/material/Divider";
-
-import { setBroker, unsubscribeAll } from "../store/reducers/mqtt";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { connect, getClient } from "../mqtt";
+import type { RootState } from "../store";
 
 import store from "../store";
-import { setConnected } from "../store/reducers/mqtt";
-import type { RootState } from "../store";
+import { setBroker, setConnected, unsubscribeAll } from "../store/reducers/mqtt";
 
 setInterval(() => {
   store.dispatch(setConnected(getClient().connected));
@@ -32,22 +29,14 @@ export default function Broker() {
   const [host, setHost] = useState("localhost");
   const [port, setPort] = useState<string | number>(9001);
   const connected = useSelector((state: RootState) => state.mqtt.connected);
-  const connectedProtocol = useSelector(
-    (state: RootState) => state.mqtt.protocol
-  );
+  const connectedProtocol = useSelector((state: RootState) => state.mqtt.protocol);
   const connectedHost = useSelector((state: RootState) => state.mqtt.host);
   const connectedPort = useSelector((state: RootState) => state.mqtt.port);
-  const subscriptions = useSelector(
-    (state: RootState) => state.mqtt.subscriptions
-  );
+  const subscriptions = useSelector((state: RootState) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
   const [expanded, setExpanded] = React.useState(false);
 
-  function handleClick(
-    nextProtocol: string,
-    nextHost: string,
-    nextPort: string | number
-  ) {
+  function handleClick(nextProtocol: string, nextHost: string, nextPort: string | number) {
     [...subscriptions.keys()].forEach((key) => {
       getClient().unsubscribe(key);
     });
@@ -67,11 +56,7 @@ export default function Broker() {
           <Box sx={{ color: "success.main", display: "flex" }}>
             <CheckIcon />
           </Box>
-          <Typography
-            component="h3"
-            variant="h6"
-            sx={{ color: "success.main" }}
-          >
+          <Typography component="h3" variant="h6" sx={{ color: "success.main" }}>
             connected to broker
           </Typography>
         </Box>

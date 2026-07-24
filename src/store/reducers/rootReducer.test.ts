@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import rootReducer from "./rootReducer";
 import { setConnected } from "./mqtt";
+import rootReducer from "./rootReducer";
 import { types as systemTypes } from "./system";
 
 describe("rootReducer", () => {

@@ -11,10 +11,7 @@ declare module "websocket-stream" {
     server: HttpServer;
   }
 
-  function createServer(
-    options: CreateServerOptions,
-    handle: (stream: Duplex) => void
-  ): unknown;
+  function createServer(options: CreateServerOptions, handle: (stream: Duplex) => void): unknown;
 
   const ws: {
     createServer: typeof createServer;
@@ -45,10 +42,12 @@ declare module "react-dropzone" {
 
   export function useDropzone(options?: DropzoneOptions): DropzoneState;
 
-  const Dropzone: (props: DropzoneOptions & {
-    children?: (state: DropzoneState) => ReactNode;
-    style?: CSSProperties;
-  }) => ReactNode;
+  const Dropzone: (
+    props: DropzoneOptions & {
+      children?: (state: DropzoneState) => ReactNode;
+      style?: CSSProperties;
+    },
+  ) => ReactNode;
 
   export default Dropzone;
 }

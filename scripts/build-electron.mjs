@@ -1,6 +1,6 @@
-import * as esbuild from "esbuild";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import * as esbuild from "esbuild";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -18,14 +18,7 @@ await Promise.all([
     ...shared,
     entryPoints: [path.join(root, "public/electron.ts")],
     outfile: path.join(root, "public/electron.js"),
-    external: [
-      "electron",
-      "aedes",
-      "aedes-stats",
-      "mqtt",
-      "portscanner",
-      "websocket-stream",
-    ],
+    external: ["electron", "aedes", "aedes-stats", "mqtt", "portscanner", "websocket-stream"],
   }),
   esbuild.build({
     ...shared,

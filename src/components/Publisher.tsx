@@ -1,20 +1,19 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { JsonEditor } from "json-edit-react";
-
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-
-import { addSentMessage } from "../store/reducers/mqtt";
+import Typography from "@mui/material/Typography";
+import { JsonEditor } from "json-edit-react";
+import type React from "react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { getClient } from "../mqtt";
+import { addSentMessage } from "../store/reducers/mqtt";
 
 const EMPTY_JSON: Record<string, unknown> = {};
 
@@ -38,10 +37,7 @@ export default function Publisher() {
     return getClient().publish(nextTopic, payload);
   }
 
-  function handleFormatChange(
-    _: React.MouseEvent<HTMLElement>,
-    next: "raw" | "json" | null
-  ) {
+  function handleFormatChange(_: React.MouseEvent<HTMLElement>, next: "raw" | "json" | null) {
     if (!next) return;
 
     if (next === "json" && format === "raw") {

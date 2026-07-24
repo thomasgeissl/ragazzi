@@ -1,22 +1,19 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
 
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { getClient } from "../mqtt";
-
-import { subscribe, unsubscribe } from "../store/reducers/mqtt";
 import type { RootState } from "../store";
+import { subscribe, unsubscribe } from "../store/reducers/mqtt";
 
 export default function Subscriptions() {
-  const subscriptions = useSelector(
-    (state: RootState) => state.mqtt.subscriptions
-  );
+  const subscriptions = useSelector((state: RootState) => state.mqtt.subscriptions);
   const dispatch = useDispatch();
 
   const toggleSubscription = (key: string) => {

@@ -13,10 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": [
-    "public/electron.ts",
-    "public/preload.ts",
-    "src/lib/ports.ts",
-    "src/types/**/*.d.ts"
-  ]
+  "include": ["public/electron.ts", "public/preload.ts", "src/lib/ports.ts", "src/types/**/*.d.ts"]
 }

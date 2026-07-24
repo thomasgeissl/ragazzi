@@ -1,7 +1,6 @@
-import { combineReducers, type AnyAction } from "redux";
-
-import system, { type SystemState } from "./system";
+import { type AnyAction, combineReducers } from "redux";
 import mqtt, { type MqttState } from "./mqtt";
+import system, { type SystemState } from "./system";
 
 export interface AppState {
   system: SystemState;
@@ -13,10 +12,7 @@ const appReducer = combineReducers({
   mqtt,
 });
 
-export default (
-  state: AppState | undefined,
-  action: AnyAction
-): AppState => {
+export default (state: AppState | undefined, action: AnyAction): AppState => {
   if (action.type === "RESET") {
     return appReducer(undefined, action);
   } else if (action.type === "SETSTATE") {

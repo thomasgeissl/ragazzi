@@ -1,6 +1,6 @@
 import type { AnyAction } from "redux";
-import type { BrokerSettings, ProjectConfig } from "../../types/ragazzi";
 import packageConfig from "../../../package.json";
+import type { BrokerSettings, ProjectConfig } from "../../types/ragazzi";
 
 export const types = {
   SETCONFIG: "SETCONFIG",
@@ -37,7 +37,7 @@ const defaultState: SystemState = {
 
 export default (
   state: SystemState = defaultState,
-  action: SystemAction | AnyAction
+  action: SystemAction | AnyAction,
 ): SystemState => {
   switch (action.type) {
     case types.SETCONFIG: {

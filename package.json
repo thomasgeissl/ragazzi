@@ -45,7 +45,12 @@
     "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "preelectron-build": "npm run build:electron && npm run build && cp ./public/entitlements.mac.plist ./build",
     "electron-build": "electron-builder -wl",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "prepare": "husky"
+  },
+  "lint-staged": {
+    "*": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
   },
   "browserslist": {
     "production": [
@@ -64,7 +69,7 @@
     "@electron/notarize": "^3.1.0",
     "@playwright/test": "^1.61.1",
     "@types/mqtt": "^0.0.34",
-    "@types/node": "^22.20.1",
+    "@types/node": "^26.1.1",
     "@types/portscanner": "^2.1.4",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
@@ -79,7 +84,7 @@
     "esbuild": "^0.28.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
-    "typescript": "^5.8.3",
+    "typescript": "^7.0.2",
     "vite": "^6.3.5",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^3.2.7",

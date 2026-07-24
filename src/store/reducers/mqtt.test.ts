@@ -22,10 +22,7 @@ describe("mqtt reducer", () => {
   });
 
   it("trims broker host and protocol", () => {
-    const state = reducer(
-      undefined,
-      setBroker("  ws  ", "  broker.local  ", 1883)
-    );
+    const state = reducer(undefined, setBroker("  ws  ", "  broker.local  ", 1883));
     expect(state).toMatchObject({
       protocol: "ws",
       host: "broker.local",

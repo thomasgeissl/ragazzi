@@ -18,11 +18,7 @@ export const getClient = (): MqttClient => {
   return secondClient ? secondClient : client;
 };
 
-export const connect = (
-  protocol: string,
-  host: string,
-  port: string | number
-): MqttClient => {
+export const connect = (protocol: string, host: string, port: string | number): MqttClient => {
   if (secondClient) {
     secondClient.end();
   }

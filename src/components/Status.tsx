@@ -1,15 +1,13 @@
-import React from "react";
-import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
-
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
+import React from "react";
+import { useSelector } from "react-redux";
 
 import { getClient } from "../mqtt";
-
+import type { RootState } from "../store";
 import store from "../store";
 import { setConnected } from "../store/reducers/mqtt";
-import type { RootState } from "../store";
 
 setInterval(() => {
   store.dispatch(setConnected(getClient().connected));
