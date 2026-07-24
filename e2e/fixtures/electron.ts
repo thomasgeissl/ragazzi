@@ -72,7 +72,11 @@ export const test = base.extend<ElectronFixtures>({
     const app = await electron.launch({
       executablePath: String(electronPath),
       args: [ROOT, "--no-sandbox"],
-      env,
+      env: Object.fromEntries(
+        Object.entries(env).filter(
+          (entry): entry is [string, string] => entry[1] !== undefined
+        )
+      ),
       timeout: 60_000,
     });
 

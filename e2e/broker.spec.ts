@@ -1,3 +1,5 @@
+/// <reference path="../src/types/ragazzi.d.ts" />
+
 import {
   test,
   expect,
@@ -8,15 +10,15 @@ import {
 import type { BrokerSettings } from "../src/types/ragazzi";
 
 test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
-  window,
+  window: page,
 }) => {
-  await expect(window.getByRole("switch")).toBeChecked();
-  await expect(window.getByText("on", { exact: true })).toBeVisible();
+  await expect(page.getByRole("switch")).toBeChecked();
+  await expect(page.getByText("on", { exact: true })).toBeVisible();
 
   await waitForPort(DEFAULT_WS_PORT);
   await waitForPort(DEFAULT_TCP_PORT);
 
-  const broker = await window.evaluate(async (): Promise<BrokerSettings> => {
+  const broker = await page.evaluate(async (): Promise<BrokerSettings> => {
     if (!window.ragazzi?.broker) {
       throw new Error("window.ragazzi.broker is unavailable");
     }
@@ -30,9 +32,9 @@ test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({
   });
 
   await expect(
-    window.getByText(String(DEFAULT_WS_PORT), { exact: false })
+    page.getByText(String(DEFAULT_WS_PORT), { exact: false })
   ).toBeVisible();
   await expect(
-    window.getByText(String(DEFAULT_TCP_PORT), { exact: false })
+    page.getByText(String(DEFAULT_TCP_PORT), { exact: false })
   ).toBeVisible();
 });

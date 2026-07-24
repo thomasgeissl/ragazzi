@@ -36,8 +36,8 @@ let brokerRunning = false;
 let brokerStarting = false;
 let tcpServer: net.Server | null = null;
 let wsServer: http.Server | null = null;
-let aedes: Awaited<ReturnType<typeof Aedes.createBroker>> | null = null;
-let aedesReady: Promise<NonNullable<typeof aedes>> | null = null;
+let aedes: import("aedes").Aedes | null = null;
+let aedesReady: Promise<import("aedes").Aedes> | null = null;
 let config: ProjectConfig = {
   title: "",
   description: "",
@@ -600,8 +600,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  if (isMac && iconPath) {
-    app.dock.setIcon(iconPath);
+  const dock = app.dock;
+  if (isMac && iconPath && dock) {
+    dock.setIcon(iconPath);
   }
   createWindow();
 });

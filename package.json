@@ -44,7 +44,8 @@
     "preelectron-dev": "npm run build:electron",
     "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "preelectron-build": "npm run build:electron && npm run build && cp ./public/entitlements.mac.plist ./build",
-    "electron-build": "electron-builder -wl"
+    "electron-build": "electron-builder -wl",
+    "prepare": "husky"
   },
   "browserslist": {
     "production": [
@@ -75,6 +76,7 @@
     "electron": "^43.2.0",
     "electron-builder": "^26.0.0",
     "esbuild": "^0.28.1",
+    "husky": "^9.1.7",
     "typescript": "^7.0.2",
     "vite": "^6.3.5",
     "vite-plugin-node-polyfills": "^0.28.0",

@@ -107,6 +107,7 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ steps.apple_identity.outputs.team_id }}
         run: |
+          npm run build:electron
           npm run build
           cp ./public/entitlements.mac.plist ./build
           npx electron-builder ${{ matrix.electron_args }} --publish never
