@@ -1,3 +1,4 @@
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
@@ -38,29 +39,12 @@ export default function Footer() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "flex-end",
           px: 1,
           mb: 0.5,
         }}
       >
-        <Typography variant="caption" color="text.secondary">
-          {updateUrl && latestVersion ? (
-            <Link
-              component="button"
-              type="button"
-              variant="caption"
-              underline="hover"
-              color="inherit"
-              onClick={() => {
-                void openExternal(updateUrl);
-              }}
-              sx={{ cursor: "pointer", verticalAlign: "baseline" }}
-            >
-              Update available: v{latestVersion}
-            </Link>
-          ) : null}
-        </Typography>
         <Typography variant="caption" color="text.secondary">
           <i>arrivederci a presto, baciotti.</i>
         </Typography>
@@ -79,12 +63,42 @@ export default function Footer() {
             flex: 1,
             bgcolor: "#ce2b37",
             color: "#fff",
-            textAlign: "right",
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 1,
             pr: 1,
             minHeight: 16,
+            fontSize: "0.75rem",
+            lineHeight: 1,
           }}
         >
-          v{version}
+          <span>v{version}</span>
+          {updateUrl && latestVersion ? (
+            <Link
+              component="button"
+              type="button"
+              underline="hover"
+              onClick={() => {
+                void openExternal(updateUrl);
+              }}
+              sx={{
+                cursor: "pointer",
+                color: "inherit",
+                fontSize: "inherit",
+                lineHeight: "inherit",
+                p: 0,
+                border: 0,
+                background: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.25,
+              }}
+            >
+              update available (v{latestVersion})
+              <OpenInNewIcon sx={{ fontSize: "0.85em" }} />
+            </Link>
+          ) : null}
         </Box>
       </Box>
     </footer>
