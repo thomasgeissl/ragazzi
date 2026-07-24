@@ -1,0 +1,52 @@
+{
+  "title": "ragazzi demo project",
+  "description": "description",
+  "views": [
+    {
+      "title": "Dashboard",
+      "path": "./index.html#/dash",
+      "width": 300,
+      "height": 200,
+      "frame": false,
+      "x": 0,
+      "y": 300,
+      "hasShadow": true
+    },
+    {
+      "title": "leds",
+      "path": "./index.html#/leds",
+      "width": 300,
+      "height": 100,
+      "frame": false,
+      "x": 600,
+      "y": 300,
+      "hasShadow": true
+    },
+    {
+      "title": "tapeDeck",
+      "path": "./index.html#/tapeDeck",
+      "width": 300,
+      "height": 200,
+      "frame": false,
+      "x": 600,
+      "y": 500,
+      "hasShadow": true
+    },
+    {
+      "title": "control",
+      "path": "./index.html#/control",
+      "width": 300,
+      "height": 100,
+      "frame": false,
+      "x": 600,
+      "y": 800,
+      "hasShadow": true
+    }
+  ],
+  "externalViews": [
+    {
+      "title": "watch",
+      "path": "./index.html#/watch"
+    }
+  ]
+}

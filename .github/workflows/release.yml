@@ -1,0 +1,144 @@
+# Build desktop apps on version tags, sign + notarize macOS, upload to GitHub Releases.
+# Required secrets (same set as gsc-app / NeopixelBlocks):
+#   APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, KEYCHAIN_PASSWORD,
+#   APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            electron_args: --mac --arm64 --x64
+          - platform: windows-latest
+            electron_args: --win
+          - platform: ubuntu-latest
+            electron_args: --linux
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set version from git tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - run: npm ci
+
+      - name: Install Linux packaging deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      # macOS: import Developer ID cert so electron-builder can sign.
+      - name: Import Apple Developer certificate
+        if: runner.os == 'macOS'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          # Keep the keychain unlocked for the whole job; notarization can run long.
+          security set-keychain-settings -u build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm certificate.p12
+
+      - name: Get signing identity
+        if: runner.os == 'macOS'
+        id: apple_identity
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" | head -1 | sed -n 's/.*"\(.*\)".*/\1/p')
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "No Developer ID Application identity found in build.keychain"
+            security find-identity -v -p codesigning build.keychain
+            exit 1
+          fi
+          echo "identity=$SIGNING_IDENTITY" >> "$GITHUB_OUTPUT"
+
+          TEAM_ID="$APPLE_TEAM_ID"
+          if [ -z "$TEAM_ID" ]; then
+            TEAM_ID=$(echo "$SIGNING_IDENTITY" | sed -n 's/.*(\([A-Z0-9]\{10\}\))$/\1/p')
+          fi
+          if [ -z "$TEAM_ID" ]; then
+            echo "Could not determine Apple Team ID from secret or signing identity ($SIGNING_IDENTITY)"
+            exit 1
+          fi
+          echo "team_id=$TEAM_ID" >> "$GITHUB_OUTPUT"
+          echo "Using Team ID: $TEAM_ID"
+
+      - name: Build renderer + package
+        env:
+          # Only set on macOS (identity step skipped elsewhere → empty).
+          CSC_NAME: ${{ steps.apple_identity.outputs.identity }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ runner.os == 'macOS' }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ steps.apple_identity.outputs.team_id }}
+        run: |
+          npm run build
+          cp ./public/entitlements.mac.plist ./build
+          npx electron-builder ${{ matrix.electron_args }} --publish never
+
+      - name: Verify macOS signature & notarization
+        if: runner.os == 'macOS'
+        run: |
+          APP=$(find dist -type d -name "ragazzi.app" | head -1)
+          if [ -z "$APP" ]; then
+            echo "Could not locate built .app bundle"
+            ls -laR dist || true
+            exit 1
+          fi
+          echo "Verifying: $APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign --display --verbose=4 "$APP"
+          spctl -a -vvv --type execute "$APP"
+          xcrun stapler validate "$APP"
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ragazzi ${{ env.VERSION }}
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

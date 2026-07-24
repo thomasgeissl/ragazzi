@@ -9,6 +9,7 @@ const mqtt = require("mqtt");
 const net = require("net");
 const ws = require("websocket-stream");
 const isDev = !app.isPackaged;
+const isE2E = process.env.RAGAZZI_E2E === "1";
 const iconPath = [
   path.join(__dirname, "icon.png"),
   path.join(__dirname, "../build/icon.png"),
@@ -16,6 +17,7 @@ const iconPath = [
 ].find((p) => fs.existsSync(p));
 const { Aedes } = require("aedes");
 const stats = require("aedes-stats");
+const { normalizePort } = require("./ports");
 
 const args = process.argv.slice(1);
 
@@ -47,11 +49,11 @@ for (var k in interfaces) {
 }
 const ip = ipAddresses.length > 0 ? ipAddresses[0] : "127.0.0.1";
 
-// start ws, tcp and web servers
-let wsPort = 9001;
-let tcpPort = 1883;
-let internalHttpPort = 8080;
-let externalHttpPort = 80;
+// start ws, tcp and web servers (env overrides used by e2e to avoid clashes)
+let wsPort = Number(process.env.RAGAZZI_WS_PORT) || 9001;
+let tcpPort = Number(process.env.RAGAZZI_TCP_PORT) || 1883;
+let internalHttpPort = Number(process.env.RAGAZZI_HTTP_PORT) || 8080;
+let externalHttpPort = Number(process.env.RAGAZZI_EXTERNAL_HTTP_PORT) || 80;
 
 let internalWebserver;
 let externalWebserver;
@@ -103,6 +105,9 @@ const attachMqttHandlers = () => {
     }
     if (topic === "ragazzi/project/open/choose") {
       openProjectChooser();
+    }
+    if (topic === "ragazzi/project/close") {
+      closeProject();
     }
     if (topic === "ragazzi/webapp/open") {
       const file = message.toString();
@@ -216,14 +221,6 @@ const stopBroker = () =>
       finish
     );
   });
-
-const normalizePort = (value, fallback) => {
-  const port = Number(value);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    return fallback;
-  }
-  return port;
-};
 
 ipcMain.handle("broker:start", async () => {
   await startBroker();
@@ -387,9 +384,7 @@ const addWindow = (url, opts) => {
   windows.push(win);
 };
 const openWebsite = (dir, fileRelative) => {
-  windows.forEach((win) => {
-    win.close();
-  });
+  closeProjectWindows();
   if (internalWebserver) {
     internalWebserver.close(() => {
       internalWebserver = null;
@@ -406,10 +401,35 @@ const openWebsite = (dir, fileRelative) => {
   }
 };
 
-const openProject = (file) => {
+const closeProjectWindows = () => {
   windows.forEach((win) => {
-    win.close();
+    if (!win.isDestroyed()) {
+      win.close();
+    }
   });
+  windows = [];
+};
+
+const stopInternalWebserver = () => {
+  if (!internalWebserver) return;
+  internalWebserver.close();
+  internalWebserver = null;
+};
+
+const closeProject = () => {
+  closeProjectWindows();
+  stopInternalWebserver();
+  config = {
+    title: "",
+    description: "",
+    views: [],
+    externalViews: [],
+  };
+  publishConfig();
+};
+
+const openProject = (file) => {
+  closeProjectWindows();
   const dir = path.dirname(file);
   if (internalWebserver) {
     internalWebserver.close(() => {
@@ -558,8 +578,9 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
+  // RAGAZZI_E2E loads the production build without packaging (Playwright).
   mainWindow.loadURL(
-    isDev
+    isDev && !isE2E
       ? "http://localhost:3000"
       : `file://${path.join(__dirname, "../build/index.html")}`
   );

@@ -20,6 +20,7 @@ import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
 import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 
 import { getClient } from "../mqtt";
+import { validateBrokerPorts } from "../lib/ports";
 
 export default () => {
   const dispatch = useDispatch();
@@ -71,28 +72,20 @@ export default () => {
         return;
       }
 
-      const nextWs = Number(wsPortDraft);
-      const nextTcp = Number(tcpPortDraft);
+      const ports = validateBrokerPorts(wsPortDraft, tcpPortDraft);
+      if (!ports.ok) {
+        setPortError(ports.error);
+        return;
+      }
 
       if (
-        !Number.isInteger(nextWs) ||
-        !Number.isInteger(nextTcp) ||
-        nextWs < 1 ||
-        nextWs > 65535 ||
-        nextTcp < 1 ||
-        nextTcp > 65535
+        ports.wsPort !== broker.wsPort ||
+        ports.tcpPort !== broker.tcpPort
       ) {
-        setPortError("Ports must be integers between 1 and 65535.");
-        return;
-      }
-
-      if (nextWs === nextTcp) {
-        setPortError("WebSocket and TCP ports must be different.");
-        return;
-      }
-
-      if (nextWs !== broker.wsPort || nextTcp !== broker.tcpPort) {
-        await api.setPorts({ wsPort: nextWs, tcpPort: nextTcp });
+        await api.setPorts({
+          wsPort: ports.wsPort,
+          tcpPort: ports.tcpPort,
+        });
       }
 
       const settings = await api.start();
@@ -230,18 +223,38 @@ export default () => {
               <Grid size={6}>
                 <Card>
                   <CardContent>
-                    <Grid container spacing={1} sx={{ maxHeight: "24px" }}>
-                      <Grid>
-                        <Box sx={{ color: "success.main" }}>
-                          <CheckIcon />
-                        </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 2,
+                      }}
+                    >
+                      <Grid container spacing={1} sx={{ maxHeight: "24px" }}>
+                        <Grid>
+                          <Box sx={{ color: "success.main" }}>
+                            <CheckIcon />
+                          </Box>
+                        </Grid>
+                        <Grid>
+                          <Typography sx={{ color: "success.main" }}>
+                            project is hosted
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid>
-                        <Typography sx={{ color: "success.main" }}>
-                          project is hosted
-                        </Typography>
-                      </Grid>
-                    </Grid>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        type="button"
+                        onClick={() => {
+                          getClient().publish("ragazzi/project/close", "");
+                        }}
+                      >
+                        shutdown
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
