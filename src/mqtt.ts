@@ -1,4 +1,5 @@
 import mqtt, { type MqttClient } from "mqtt";
+import { decodePayload } from "./lib/payload";
 import store from "./store";
 import { addReceivedMessage, setBroker } from "./store/reducers/mqtt";
 
@@ -8,7 +9,8 @@ let localWsPort = 9001;
 
 const attachMessageHandler = (mqttClient: MqttClient) => {
   mqttClient.on("message", (topic, message) => {
-    store.dispatch(addReceivedMessage(topic, message.toString()));
+    const decoded = decodePayload(message);
+    store.dispatch(addReceivedMessage(topic, decoded.message, decoded.encoding));
   });
 };
 

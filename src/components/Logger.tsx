@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import compare from "date-fns/compareDesc";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { encodePayload, type PayloadEncoding } from "../lib/payload";
 import { getClient } from "../mqtt";
 import type { RootState } from "../store";
 import store from "../store/index";
@@ -41,9 +42,10 @@ export default function Logger() {
   const [topicFilter, setTopicFilter] = useState("");
   const dispatch = useDispatch();
 
-  function sendMessage(topic: string, message: string) {
-    dispatch(addSentMessage(topic, message));
-    return getClient().publish(topic, message);
+  function sendMessage(topic: string, message: string, encoding: PayloadEncoding) {
+    const payload = encodePayload(message, encoding);
+    dispatch(addSentMessage(topic, payload.message, payload.encoding));
+    return getClient().publish(topic, payload.payload);
   }
 
   return (
@@ -116,14 +118,18 @@ export default function Logger() {
                         {message.type === "OUTGOING" && (
                           <SendIcon
                             onClick={() => {
-                              sendMessage(message.topic, message.message);
+                              sendMessage(message.topic, message.message, message.encoding);
                             }}
                             style={{ cursor: "pointer" }}
                           />
                         )}
                       </TableCell>
                       <TableCell>{message.topic}</TableCell>
-                      <TableCell>{message.message}</TableCell>
+                      <TableCell>
+                        {message.encoding === "utf8"
+                          ? message.message
+                          : `${message.encoding}: ${message.message}`}
+                      </TableCell>
                       <TableCell>{format(message.timestamp, "HH:mm:ss")}</TableCell>
                     </TableRow>
                   );

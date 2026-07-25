@@ -24,6 +24,21 @@ brew install --cask ragazzi
 - npm run electron-dev
 - npm run electron-build
 
+## Publishing payloads
+
+The publisher keeps its existing raw UTF-8 text and JSON modes. In raw mode, choose an
+encoding when the receiver expects binary data:
+
+- **UTF-8 text** — sends the entered text as UTF-8 (the default).
+- **hex bytes** — enter byte pairs such as `7f 00 ff`.
+- **Base64 bytes** — enter Base64 data such as `fw==`.
+- **unsigned byte** — enter one decimal value from `0` through `255`; for example,
+  entering `127` sends one byte, `0x7f`, rather than the three UTF-8 characters `127`.
+
+Malformed hex, Base64, and unsigned-byte values are not published. Binary messages in
+the activity log are labeled with their encoding and can be replayed without changing
+their wire bytes.
+
 ## Desktop release CI
 
 Tag pushes (`x.y.z` or `vx.y.z`) run [`.github/workflows/release.yml`](.github/workflows/release.yml): tests, then package Windows / macOS / Linux and upload artifacts to the GitHub Release.

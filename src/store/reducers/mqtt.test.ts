@@ -52,10 +52,11 @@ describe("mqtt reducer", () => {
   });
 
   it("prepends sent messages and caps at 99", () => {
-    let state = reducer(undefined, addSentMessage("out", "hi"));
+    let state = reducer(undefined, addSentMessage("out", "7f", "hex"));
     expect(state.sentMessages[0]).toMatchObject({
       topic: "out",
-      message: "hi",
+      message: "7f",
+      encoding: "hex",
       type: "OUTGOING",
     });
 

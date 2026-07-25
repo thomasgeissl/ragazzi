@@ -12,45 +12,54 @@ import { JsonEditor } from "json-edit-react";
 import type React from "react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { encodePayload, type PayloadEncoding } from "../lib/payload";
 import { getClient } from "../mqtt";
 import { addSentMessage } from "../store/reducers/mqtt";
 
 const EMPTY_JSON: Record<string, unknown> = {};
+type PayloadFormat = PayloadEncoding | "json";
 
 export default function Publisher() {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [jsonData, setJsonData] = useState<unknown>(EMPTY_JSON);
-  const [format, setFormat] = useState<"raw" | "json">("raw");
+  const [format, setFormat] = useState<PayloadFormat>("json");
+  const [payloadError, setPayloadError] = useState("");
   const dispatch = useDispatch();
 
   function payloadForPublish() {
     if (format === "json") {
-      return JSON.stringify(jsonData);
+      return encodePayload(JSON.stringify(jsonData), "utf8");
     }
-    return message;
+    return encodePayload(message, format);
   }
 
   function handleClick(nextTopic: string) {
-    const payload = payloadForPublish();
-    dispatch(addSentMessage(nextTopic, payload));
-    return getClient().publish(nextTopic, payload);
+    try {
+      const payload = payloadForPublish();
+      setPayloadError("");
+      dispatch(addSentMessage(nextTopic, payload.message, payload.encoding));
+      return getClient().publish(nextTopic, payload.payload);
+    } catch (error) {
+      setPayloadError(error instanceof Error ? error.message : "Payload could not be encoded.");
+    }
   }
 
-  function handleFormatChange(_: React.MouseEvent<HTMLElement>, next: "raw" | "json" | null) {
+  function handleFormatChange(_: React.MouseEvent<HTMLElement>, next: PayloadFormat | null) {
     if (!next) return;
 
-    if (next === "json" && format === "raw") {
+    if (next === "json" && format !== "json") {
       try {
         const parsed = message.trim() ? JSON.parse(message) : EMPTY_JSON;
         setJsonData(parsed);
       } catch {
         setJsonData(EMPTY_JSON);
       }
-    } else if (next === "raw" && format === "json") {
-      setMessage(JSON.stringify(jsonData, null, 2));
+    } else if (next !== "json" && format === "json") {
+      setMessage("");
     }
 
+    setPayloadError("");
     setFormat(next);
   }
 
@@ -87,17 +96,34 @@ export default function Publisher() {
               },
             }}
           >
-            <ToggleButton value="raw">raw</ToggleButton>
             <ToggleButton value="json">json</ToggleButton>
+            <ToggleButton value="utf8">UTF-8</ToggleButton>
+            <ToggleButton value="hex">hex</ToggleButton>
+            <ToggleButton value="base64">base64</ToggleButton>
+            <ToggleButton value="uint8">byte</ToggleButton>
           </ToggleButtonGroup>
-          {format === "raw" ? (
+          {format !== "json" ? (
             <TextField
               fullWidth
               size="small"
               multiline
-              label="message"
+              label={format === "uint8" ? "byte value" : "message"}
               value={message}
-              onChange={(event) => setMessage(event.target.value)}
+              helperText={
+                payloadError ||
+                (format === "hex"
+                  ? "Byte pairs, optionally separated by spaces (for example, 7f 00 ff)."
+                  : format === "base64"
+                    ? "Base64-encoded bytes (for example, fw==)."
+                    : format === "uint8"
+                      ? "One decimal byte from 0 through 255 (for example, 127 sends 0x7f)."
+                      : undefined)
+              }
+              error={Boolean(payloadError)}
+              onChange={(event) => {
+                setMessage(event.target.value);
+                setPayloadError("");
+              }}
               onKeyPress={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

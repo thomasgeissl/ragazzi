@@ -131,7 +131,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: ragazzi ${{ env.VERSION }}
-          generate_release_notes: true
+          generate_release_notes: ${{ matrix.platform == 'ubuntu-latest' }}
           fail_on_unmatched_files: false
           files: |
             dist/*.dmg

@@ -1,4 +1,5 @@
 import type { AnyAction } from "redux";
+import type { PayloadEncoding } from "../../lib/payload";
 
 export const types = {
   SETCONNECTED: "SETCONNECTED",
@@ -17,6 +18,7 @@ export type MessageType = "INCOMING" | "OUTGOING";
 export interface MqttMessage {
   topic: string;
   message: string;
+  encoding: PayloadEncoding;
   timestamp: Date;
   type: MessageType;
 }
@@ -57,19 +59,29 @@ export const setConnected = (value: boolean) => ({
   },
 });
 
-export const addReceivedMessage = (topic: string, message: string) => ({
+export const addReceivedMessage = (
+  topic: string,
+  message: string,
+  encoding: PayloadEncoding = "utf8",
+) => ({
   type: types.ADDRECEIVEDMESSAGE,
   payload: {
     topic,
     message,
+    encoding,
   },
 });
 
-export const addSentMessage = (topic: string, message: string) => ({
+export const addSentMessage = (
+  topic: string,
+  message: string,
+  encoding: PayloadEncoding = "utf8",
+) => ({
   type: types.ADDSENTMESSAGE,
   payload: {
     topic,
     message,
+    encoding,
   },
 });
 
