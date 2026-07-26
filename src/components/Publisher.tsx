@@ -8,9 +8,10 @@ import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
-import { JsonEditor } from "json-edit-react";
+import { JsonEditor, type TextEditorProps } from "json-edit-react";
+import JSON5 from "json5";
 import type React from "react";
-import { useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { encodePayload, type PayloadEncoding } from "../lib/payload";
 import { publishMessage } from "../mqtt";
 
@@ -23,6 +24,70 @@ export default function Publisher() {
   const [jsonData, setJsonData] = useState<unknown>(EMPTY_JSON);
   const [format, setFormat] = useState<PayloadFormat>("json");
   const [payloadError, setPayloadError] = useState("");
+  const [jsonInputError, setJsonInputError] = useState(false);
+  const editingJsonRoot = useRef(true);
+  const onJsonTextChange = useRef<(value: string) => void>(() => {});
+  const jsonEditorTriggers = useMemo(() => ({ edit: { path: [] } }), []);
+  const JsonTextEditor = useMemo(
+    () =>
+      function JsonTextEditor({ value, onChange, onKeyDown }: TextEditorProps) {
+        const dummyValue = value.endsWith("\n") ? `${value}.` : value;
+
+        return (
+          <Box sx={{ display: "grid" }}>
+            <textarea
+              className="jer-collection-text-area"
+              rows={1}
+              style={{
+                gridArea: "1 / 1 / 2 / 2",
+                height: "auto",
+                overflowY: "auto",
+                whiteSpace: "pre-wrap",
+              }}
+              value={value}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                onChange(nextValue);
+                onJsonTextChange.current(nextValue);
+              }}
+              onFocus={(event) => {
+                if (value.length < 40) event.target.select();
+              }}
+              onKeyDown={onKeyDown}
+            />
+            <span
+              className="jer-collection-text-area"
+              style={{
+                border: "1px solid transparent",
+                gridArea: "1 / 1 / 2 / 2",
+                height: "auto",
+                overflowY: "auto",
+                visibility: "hidden",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {dummyValue}
+            </span>
+          </Box>
+        );
+      },
+    [],
+  );
+
+  const saveJsonText = useCallback((value: string) => {
+    if (!editingJsonRoot.current) return;
+
+    try {
+      const parsed = JSON5.parse(value);
+      setJsonData(parsed);
+      setJsonInputError(false);
+    } catch {
+      setJsonInputError(true);
+    }
+  }, []);
+
+  onJsonTextChange.current = saveJsonText;
+
   function payloadForPublish() {
     if (format === "json") {
       return encodePayload(JSON.stringify(jsonData), "utf8");
@@ -45,7 +110,7 @@ export default function Publisher() {
 
     if (next === "json" && format !== "json") {
       try {
-        const parsed = message.trim() ? JSON.parse(message) : EMPTY_JSON;
+        const parsed = message.trim() ? JSON5.parse(message) : EMPTY_JSON;
         setJsonData(parsed);
       } catch {
         setJsonData(EMPTY_JSON);
@@ -55,6 +120,7 @@ export default function Publisher() {
     }
 
     setPayloadError("");
+    setJsonInputError(false);
     setFormat(next);
   }
 
@@ -135,22 +201,48 @@ export default function Publisher() {
                 overflow: "auto",
                 maxHeight: 360,
                 "& .jer-editor-container": { fontSize: "0.875rem" },
+                "& .jer-collection-text-edit": { minWidth: 0, width: "100%" },
+                "& .jer-collection-text-area": {
+                  boxSizing: "border-box",
+                  maxWidth: "100%",
+                  resize: "vertical",
+                  width: "100%",
+                },
+                "& .jer-collection-input-button-row": {
+                  justifyContent: "flex-start",
+                  width: "auto",
+                },
               }}
             >
               <JsonEditor
                 data={jsonData}
                 setData={setJsonData}
                 rootName="message"
+                indent={2}
                 minWidth="100%"
                 maxWidth="100%"
+                externalTriggers={jsonEditorTriggers}
+                jsonParse={JSON5.parse}
+                TextEditor={JsonTextEditor}
+                onError={({ error }) => {
+                  if (error.code === "INVALID_JSON") setJsonInputError(true);
+                }}
+                onUpdate={() => setJsonInputError(false)}
+                onEditEvent={(path) => {
+                  editingJsonRoot.current = path?.length === 0;
+                  if (!path) {
+                    setJsonInputError(false);
+                  }
+                }}
               />
             </Box>
           )}
-          <Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
               color="primary"
               type="button"
+              disabled={format === "json" && jsonInputError}
               onClick={() => handleClick(topic)}
             >
               publish
