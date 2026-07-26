@@ -70,3 +70,9 @@ End-to-end tests use [Playwright](https://playwright.dev/) against Electron (sta
 - `npm run test:e2e:smoke` — `@smoke` tests only
 
 On Linux CI, e2e runs under `xvfb-run`.
+
+## Support
+
+If you find ragazzi useful, you can support development:
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/thomasgeissl)
