@@ -71,6 +71,5 @@ export interface RagazziApi {
 declare global {
   interface Window {
     ragazzi?: RagazziApi;
-    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof import("redux").compose;
   }
 }

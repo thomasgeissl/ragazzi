@@ -4,16 +4,15 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useState } from "react";
 
 import { getClient } from "../mqtt";
 
-import { addSubscription } from "../store/reducers/mqtt";
+import { useMqttStore } from "../stores/mqtt";
 
 export default function Subscriber() {
   const [topic, setTopic] = useState("");
-  const dispatch = useDispatch();
+  const addSubscription = useMqttStore((state) => state.addSubscription);
   return (
     <Card>
       <CardContent>
@@ -30,7 +29,7 @@ export default function Subscriber() {
             if (e.key === "Enter") {
               e.preventDefault();
               getClient().subscribe(topic);
-              dispatch(addSubscription(topic));
+              addSubscription(topic);
               setTopic("");
             }
           }}
@@ -43,7 +42,7 @@ export default function Subscriber() {
           type="button"
           onClick={() => {
             getClient().subscribe(topic);
-            dispatch(addSubscription(topic));
+            addSubscription(topic);
             setTopic("");
           }}
         >

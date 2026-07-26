@@ -23,7 +23,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
-      include: ["src/lib/**/*.ts", "src/store/reducers/**/*.ts"],
+      include: ["src/lib/**/*.ts", "src/stores/**/*.ts"],
       exclude: ["src/**/*.test.{ts,tsx}"],
     },
   },

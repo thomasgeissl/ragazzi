@@ -3,9 +3,8 @@ import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { checkForUpdate } from "../lib/updates";
-import type { RootState } from "../store";
+import { useSystemStore } from "../stores/system";
 
 async function openExternal(url: string) {
   if (window.ragazzi?.openExternal) {
@@ -16,7 +15,7 @@ async function openExternal(url: string) {
 }
 
 export default function Footer() {
-  const version = useSelector((state: RootState) => state.system.version);
+  const version = useSystemStore((state) => state.version);
   const [updateUrl, setUpdateUrl] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
 

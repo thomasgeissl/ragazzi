@@ -1,13 +1,6 @@
 import { Buffer } from "node:buffer";
 import { decodePayload } from "./lib/payload";
-import store from "./store";
-import {
-  addReceivedMessage,
-  setBroker,
-  setConnected,
-  setConnectionEnabled,
-  unsubscribeAll,
-} from "./store/reducers/mqtt";
+import { useMqttStore } from "./stores/mqtt";
 
 type Payload = string | Uint8Array;
 
@@ -19,7 +12,7 @@ const mqttApi = () => {
 };
 
 const dispatchConnectionError = () => {
-  store.dispatch(setConnected(false));
+  useMqttStore.getState().setConnected(false);
 };
 
 const runMqttOperation = (operation: () => Promise<unknown>) => {
@@ -28,7 +21,7 @@ const runMqttOperation = (operation: () => Promise<unknown>) => {
 
 const client = {
   get connected() {
-    return store.getState().mqtt.connected;
+    return useMqttStore.getState().connected;
   },
   publish(topic: string, payload: Payload) {
     const encodedPayload = Buffer.from(payload).toString("base64");
@@ -60,21 +53,23 @@ export const connect = (
   };
   // A client connection never carries subscriptions to its next session.
   // Keep the saved topic list but mark every topic inactive before reconnecting.
-  store.dispatch(unsubscribeAll());
-  store.dispatch(setBroker(protocol, host, Number(port)));
-  store.dispatch(setConnectionEnabled(true));
+  const mqttStore = useMqttStore.getState();
+  mqttStore.unsubscribeAll();
+  mqttStore.setBroker(protocol, host, Number(port));
+  mqttStore.setConnectionEnabled(true);
   runMqttOperation(() => mqttApi().connect(connection));
 };
 
 export const disconnect = (): void => {
-  store.dispatch(unsubscribeAll());
-  store.dispatch(setConnected(false));
-  store.dispatch(setConnectionEnabled(false));
+  const mqttStore = useMqttStore.getState();
+  mqttStore.unsubscribeAll();
+  mqttStore.setConnected(false);
+  mqttStore.setConnectionEnabled(false);
   runMqttOperation(() => mqttApi().disconnect());
 };
 
 export const reconnectLocal = (wsPort: number | string) => {
-  const state = store.getState().mqtt;
+  const state = useMqttStore.getState();
   const port = Number(wsPort) || 9001;
   if (
     !state.connectionEnabled ||
@@ -90,12 +85,13 @@ export const reconnectLocal = (wsPort: number | string) => {
 
 if (window.ragazzi?.mqtt) {
   window.ragazzi.mqtt.onStatus((status) => {
-    store.dispatch(setBroker(status.protocol, status.host, status.port));
-    store.dispatch(setConnected(status.connected));
+    const mqttStore = useMqttStore.getState();
+    mqttStore.setBroker(status.protocol, status.host, status.port);
+    mqttStore.setConnected(status.connected);
   });
   window.ragazzi.mqtt.onMessage((message) => {
     const decoded = decodePayload(Buffer.from(message.payload, "base64"));
-    store.dispatch(addReceivedMessage(message.topic, decoded.message, decoded.encoding));
+    useMqttStore.getState().addReceivedMessage(message.topic, decoded.message, decoded.encoding);
   });
   connect("ws", "localhost", 9001);
 }

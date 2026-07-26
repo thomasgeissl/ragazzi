@@ -6,24 +6,22 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { getClient } from "../mqtt";
-import type { RootState } from "../store";
-import { subscribe, unsubscribe } from "../store/reducers/mqtt";
+import { useMqttStore } from "../stores/mqtt";
 
 export default function Subscriptions() {
-  const subscriptions = useSelector((state: RootState) => state.mqtt.subscriptions);
-  const dispatch = useDispatch();
+  const subscriptions = useMqttStore((state) => state.subscriptions);
+  const subscribe = useMqttStore((state) => state.subscribe);
+  const unsubscribe = useMqttStore((state) => state.unsubscribe);
 
   const toggleSubscription = (key: string) => {
     return () => {
       if (subscriptions.get(key)) {
         getClient().unsubscribe(key);
-        dispatch(unsubscribe(key));
+        unsubscribe(key);
       } else {
         getClient().subscribe(key);
-        dispatch(subscribe(key));
+        subscribe(key);
       }
     };
   };

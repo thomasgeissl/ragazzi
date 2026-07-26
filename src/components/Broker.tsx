@@ -12,16 +12,15 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { connect, disconnect } from "../mqtt";
-import type { RootState } from "../store";
+import { useMqttStore } from "../stores/mqtt";
 
 export default function Broker() {
-  const connected = useSelector((state: RootState) => state.mqtt.connected);
-  const connectedProtocol = useSelector((state: RootState) => state.mqtt.protocol);
-  const connectedHost = useSelector((state: RootState) => state.mqtt.host);
-  const connectedPort = useSelector((state: RootState) => state.mqtt.port);
-  const connectionEnabled = useSelector((state: RootState) => state.mqtt.connectionEnabled);
+  const connected = useMqttStore((state) => state.connected);
+  const connectedProtocol = useMqttStore((state) => state.protocol);
+  const connectedHost = useMqttStore((state) => state.host);
+  const connectedPort = useMqttStore((state) => state.port);
+  const connectionEnabled = useMqttStore((state) => state.connectionEnabled);
   const [protocol, setProtocol] = useState(connectedProtocol);
   const [host, setHost] = useState(connectedHost);
   const [port, setPort] = useState<string | number>(connectedPort);

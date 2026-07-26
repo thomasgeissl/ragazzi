@@ -16,16 +16,15 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { validateBrokerPorts } from "../lib/ports";
 import { getClient } from "../mqtt";
-import type { RootState } from "../store";
+import { useSystemStore } from "../stores/system";
 
 export default function Home() {
-  const dispatch = useDispatch();
-  const config = useSelector((state: RootState) => state.system.config);
-  const broker = useSelector((state: RootState) => state.system.broker);
+  const config = useSystemStore((state) => state.config);
+  const broker = useSystemStore((state) => state.broker);
+  const setBrokerSettings = useSystemStore((state) => state.setBrokerSettings);
   const [brokerBusy, setBrokerBusy] = useState(false);
   const [wsPortDraft, setWsPortDraft] = useState(String(broker.wsPort));
   const [tcpPortDraft, setTcpPortDraft] = useState(String(broker.tcpPort));
@@ -47,15 +46,15 @@ export default function Home() {
     if (!api) return undefined;
 
     api.getSettings().then((settings) => {
-      dispatch({ type: "SETBROKERSETTINGS", payload: { value: settings } });
+      setBrokerSettings(settings);
     });
 
     return api.onSettings((settings) => {
-      dispatch({ type: "SETBROKERSETTINGS", payload: { value: settings } });
+      setBrokerSettings(settings);
       setBrokerBusy(false);
       setPortError("");
     });
-  }, [dispatch]);
+  }, [setBrokerSettings]);
 
   const handleBrokerToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const api = window.ragazzi?.broker;
@@ -68,7 +67,7 @@ export default function Home() {
     try {
       if (!shouldRun) {
         const settings = await api.stop();
-        dispatch({ type: "SETBROKERSETTINGS", payload: { value: settings } });
+        setBrokerSettings(settings);
         return;
       }
 
@@ -86,7 +85,7 @@ export default function Home() {
       }
 
       const settings = await api.start();
-      dispatch({ type: "SETBROKERSETTINGS", payload: { value: settings } });
+      setBrokerSettings(settings);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not update broker.";
       setPortError(message);

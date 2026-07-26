@@ -11,10 +11,9 @@ import Typography from "@mui/material/Typography";
 import { JsonEditor } from "json-edit-react";
 import type React from "react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { encodePayload, type PayloadEncoding } from "../lib/payload";
 import { getClient } from "../mqtt";
-import { addSentMessage } from "../store/reducers/mqtt";
+import { useMqttStore } from "../stores/mqtt";
 
 const EMPTY_JSON: Record<string, unknown> = {};
 type PayloadFormat = PayloadEncoding | "json";
@@ -25,7 +24,7 @@ export default function Publisher() {
   const [jsonData, setJsonData] = useState<unknown>(EMPTY_JSON);
   const [format, setFormat] = useState<PayloadFormat>("json");
   const [payloadError, setPayloadError] = useState("");
-  const dispatch = useDispatch();
+  const addSentMessage = useMqttStore((state) => state.addSentMessage);
 
   function payloadForPublish() {
     if (format === "json") {
@@ -38,7 +37,7 @@ export default function Publisher() {
     try {
       const payload = payloadForPublish();
       setPayloadError("");
-      dispatch(addSentMessage(nextTopic, payload.message, payload.encoding));
+      addSentMessage(nextTopic, payload.message, payload.encoding);
       return getClient().publish(nextTopic, payload.payload);
     } catch (error) {
       setPayloadError(error instanceof Error ? error.message : "Payload could not be encoded.");

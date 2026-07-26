@@ -1,16 +1,15 @@
 import styled from "@emotion/styled";
 import { ThemeProvider } from "@mui/material/styles";
 import mqtt, { type MqttClient } from "mqtt";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Provider as StoreProvider } from "react-redux";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Dev from "./components/Dev";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
 import { reconnectLocal } from "./mqtt";
 
-import store from "./store";
+import { useSystemStore } from "./stores/system";
 import theme from "./theme";
 import type { BrokerSettings } from "./types/ragazzi";
 
@@ -22,7 +21,12 @@ const attachBusHandlers = (client: MqttClient) => {
   client.on("message", (topic, message) => {
     if (topic === "ragazzi") {
       const action = JSON.parse(message.toString());
-      store.dispatch(action);
+      if (action.type === "SETCONFIG") {
+        useSystemStore.getState().setConfig(action.payload.value);
+      }
+      if (action.type === "SETBROKERSETTINGS") {
+        useSystemStore.getState().setBrokerSettings(action.payload.value);
+      }
     }
   });
 };
@@ -44,10 +48,7 @@ const reconnectBus = (wsPort: number | string) => {
 
 const applyBrokerSettings = (settings: BrokerSettings | null | undefined) => {
   if (!settings) return;
-  store.dispatch({
-    type: "SETBROKERSETTINGS",
-    payload: { value: settings },
-  });
+  useSystemStore.getState().setBrokerSettings(settings);
   reconnectBus(settings.wsPort);
   reconnectLocal(settings.wsPort);
 };
@@ -86,24 +87,22 @@ export default function App() {
   const { getRootProps } = useDropzone({ onDrop });
 
   return (
-    <StoreProvider store={store}>
-      <ThemeProvider theme={theme}>
-        <Router>
-          <Container {...getRootProps()}>
-            <Content>
-              <Switch>
-                <Route path="/dev">
-                  <Dev />
-                </Route>
-                <Route path="/">
-                  <Home />
-                </Route>
-              </Switch>
-            </Content>
-            <Footer />
-          </Container>
-        </Router>
-      </ThemeProvider>
-    </StoreProvider>
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Container {...getRootProps()}>
+          <Content>
+            <Switch>
+              <Route path="/dev">
+                <Dev />
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </Content>
+          <Footer />
+        </Container>
+      </Router>
+    </ThemeProvider>
   );
 }
