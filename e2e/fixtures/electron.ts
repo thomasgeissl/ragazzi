@@ -54,6 +54,21 @@ export async function stubOpenDialog(
   }, filePaths);
 }
 
+/**
+ * Stub Electron's native save dialog and return a deterministic file path.
+ */
+export async function stubSaveDialog(
+  electronApp: ElectronApplication,
+  filePath: string,
+): Promise<void> {
+  await electronApp.evaluate(({ dialog }, targetPath) => {
+    dialog.showSaveDialog = async () => ({
+      canceled: false,
+      filePath: targetPath,
+    });
+  }, filePath);
+}
+
 type ElectronFixtures = {
   electronApp: ElectronApplication;
   window: Page;

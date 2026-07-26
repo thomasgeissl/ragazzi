@@ -88,11 +88,117 @@ describe("mqtt store", () => {
     const store = useMqttStore.getState();
     store.addReceivedMessage("t", "in");
     store.addSentMessage("t", "out");
+    store.saveHistoryTab();
     store.clearMessages();
 
     expect(useMqttStore.getState()).toMatchObject({
       receivedMessages: [],
       sentMessages: [],
     });
+    expect(useMqttStore.getState().historyTabs).toHaveLength(1);
+  });
+
+  it("saves a durable history snapshot and can remove it", () => {
+    const store = useMqttStore.getState();
+    store.addReceivedMessage("in/topic", "received");
+    store.addSentMessage("out/topic", "sent");
+
+    const historyTabId = store.saveHistoryTab();
+    const historyTab = useMqttStore
+      .getState()
+      .historyTabs.find((candidate) => candidate.id === historyTabId);
+
+    expect(historyTab).toMatchObject({
+      id: historyTabId,
+      messages: [
+        expect.objectContaining({ topic: "in/topic", type: "INCOMING" }),
+        expect.objectContaining({ topic: "out/topic", type: "OUTGOING" }),
+      ],
+    });
+    expect(historyTab?.createdAt).toBeInstanceOf(Date);
+
+    useMqttStore.getState().deleteHistoryTab(historyTabId ?? "");
+    expect(useMqttStore.getState().historyTabs).toEqual([]);
+  });
+
+  it("does not save an empty live history", () => {
+    expect(useMqttStore.getState().saveHistoryTab()).toBeUndefined();
+    expect(useMqttStore.getState().historyTabs).toEqual([]);
+  });
+
+  it("renames a saved history tab", () => {
+    const store = useMqttStore.getState();
+    store.addReceivedMessage("topic", "message");
+    const historyTabId = store.saveHistoryTab();
+
+    store.renameHistoryTab(historyTabId ?? "", "  Renamed history  ");
+
+    expect(useMqttStore.getState().historyTabs[0]?.title).toBe("Renamed history");
+  });
+
+  it("imports history into a new saved tab without changing live messages", () => {
+    const store = useMqttStore.getState();
+    store.addReceivedMessage("live/topic", "live");
+    const importedTabId = store.importHistoryTab({
+      title: "Imported history",
+      messages: [
+        {
+          id: "imported-message",
+          topic: "imported/topic",
+          message: "imported",
+          encoding: "utf8",
+          timestamp: new Date("2026-01-01T12:00:00.000Z"),
+          type: "OUTGOING",
+        },
+      ],
+    });
+
+    expect(useMqttStore.getState().receivedMessages).toHaveLength(1);
+    expect(useMqttStore.getState().historyTabs).toContainEqual({
+      id: importedTabId,
+      title: "Imported history",
+      createdAt: expect.any(Date),
+      messages: [
+        {
+          id: "imported-message",
+          topic: "imported/topic",
+          message: "imported",
+          encoding: "utf8",
+          timestamp: new Date("2026-01-01T12:00:00.000Z"),
+          type: "OUTGOING",
+        },
+      ],
+    });
+  });
+
+  it("orders imported messages by timestamp", () => {
+    const importedTabId = useMqttStore.getState().importHistoryTab({
+      title: "Out of order",
+      messages: [
+        {
+          id: "second",
+          topic: "topic",
+          message: "second",
+          encoding: "utf8",
+          timestamp: new Date("2026-01-01T12:00:01.000Z"),
+          type: "INCOMING",
+        },
+        {
+          id: "first",
+          topic: "topic",
+          message: "first",
+          encoding: "utf8",
+          timestamp: new Date("2026-01-01T12:00:00.000Z"),
+          type: "OUTGOING",
+        },
+      ],
+    });
+
+    expect(
+      useMqttStore
+        .getState()
+        .historyTabs.find((historyTab) => historyTab.id === importedTabId)
+        ?.messages.map((message) => message.id),
+    ).toEqual(["first", "second"]);
   });
 });

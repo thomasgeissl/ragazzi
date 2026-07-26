@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { decodePayload } from "./lib/payload";
+import { decodePayload, encodePayload, type PayloadEncoding } from "./lib/payload";
 import { useMqttStore } from "./stores/mqtt";
 
 type Payload = string | Uint8Array;
@@ -36,6 +36,12 @@ const client = {
 };
 
 export const getClient = () => client;
+
+export function publishMessage(topic: string, message: string, encoding: PayloadEncoding): void {
+  const payload = encodePayload(message, encoding);
+  useMqttStore.getState().addSentMessage(topic, payload.message, payload.encoding);
+  client.publish(topic, payload.payload);
+}
 
 export const connect = (
   protocol: string,

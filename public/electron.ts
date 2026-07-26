@@ -407,6 +407,31 @@ ipcMain.handle("mqtt:client:unsubscribe", (_event, topic: unknown) => {
   requireDevMqttClient().unsubscribe(topic);
 });
 
+ipcMain.handle("history:export", async (_event, contents: unknown, defaultName: unknown) => {
+  if (typeof contents !== "string" || typeof defaultName !== "string") {
+    throw new Error("Invalid history export request");
+  }
+
+  const result = await dialog.showSaveDialog({
+    defaultPath: defaultName.endsWith(".json") ? defaultName : `${defaultName}.json`,
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+  if (result.canceled || !result.filePath) return false;
+
+  await fs.promises.writeFile(result.filePath, contents, "utf8");
+  return true;
+});
+
+ipcMain.handle("history:import", async () => {
+  const result = await dialog.showOpenDialog({
+    filters: [{ name: "JSON", extensions: ["json"] }],
+    properties: ["openFile"],
+  });
+  if (result.canceled || !result.filePaths[0]) return undefined;
+
+  return fs.promises.readFile(result.filePaths[0], "utf8");
+});
+
 ipcMain.handle("shell:openExternal", async (_event, targetUrl: unknown) => {
   if (typeof targetUrl !== "string" || !/^https?:\/\//i.test(targetUrl)) {
     throw new Error("Invalid URL");

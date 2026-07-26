@@ -62,9 +62,15 @@ export interface RagazziMqttApi {
   onMessage: (callback: (message: MqttIncomingMessage) => void) => () => void;
 }
 
+export interface RagazziHistoryApi {
+  export: (contents: string, defaultName: string) => Promise<boolean>;
+  import: () => Promise<string | undefined>;
+}
+
 export interface RagazziApi {
   broker: RagazziBrokerApi;
   mqtt: RagazziMqttApi;
+  history: RagazziHistoryApi;
   openExternal: (url: string) => Promise<void>;
 }
 

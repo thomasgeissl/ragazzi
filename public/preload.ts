@@ -42,5 +42,10 @@ contextBridge.exposeInMainWorld("ragazzi", {
       return () => ipcRenderer.removeListener("mqtt:client:message", handler);
     },
   },
+  history: {
+    export: (contents: string, defaultName: string): Promise<boolean> =>
+      ipcRenderer.invoke("history:export", contents, defaultName),
+    import: (): Promise<string | undefined> => ipcRenderer.invoke("history:import"),
+  },
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke("shell:openExternal", url),
 });

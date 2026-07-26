@@ -12,8 +12,7 @@ import { JsonEditor } from "json-edit-react";
 import type React from "react";
 import { useState } from "react";
 import { encodePayload, type PayloadEncoding } from "../lib/payload";
-import { getClient } from "../mqtt";
-import { useMqttStore } from "../stores/mqtt";
+import { publishMessage } from "../mqtt";
 
 const EMPTY_JSON: Record<string, unknown> = {};
 type PayloadFormat = PayloadEncoding | "json";
@@ -24,8 +23,6 @@ export default function Publisher() {
   const [jsonData, setJsonData] = useState<unknown>(EMPTY_JSON);
   const [format, setFormat] = useState<PayloadFormat>("json");
   const [payloadError, setPayloadError] = useState("");
-  const addSentMessage = useMqttStore((state) => state.addSentMessage);
-
   function payloadForPublish() {
     if (format === "json") {
       return encodePayload(JSON.stringify(jsonData), "utf8");
@@ -37,8 +34,7 @@ export default function Publisher() {
     try {
       const payload = payloadForPublish();
       setPayloadError("");
-      addSentMessage(nextTopic, payload.message, payload.encoding);
-      return getClient().publish(nextTopic, payload.payload);
+      publishMessage(nextTopic, payload.message, payload.encoding);
     } catch (error) {
       setPayloadError(error instanceof Error ? error.message : "Payload could not be encoded.");
     }
