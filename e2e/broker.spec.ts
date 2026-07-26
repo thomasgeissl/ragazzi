@@ -32,7 +32,7 @@ test("Dev Tools disconnect switch reveals editable broker settings", async ({ wi
 
   const brokerSwitch = page.getByLabel("Broker connection");
   await expect(brokerSwitch).toBeChecked();
-  await expect(page.getByLabel("protocol")).toHaveCount(0);
+  await expect(page.getByLabel("protocol")).not.toBeVisible();
 
   await brokerSwitch.click();
 

@@ -20,7 +20,7 @@ test("saved histories can be renamed, exported, imported, and replayed", async (
     });
 
     await expect(page.getByText("saved payload", { exact: true })).toBeVisible();
-    await page.getByLabel("save history").click();
+    await page.getByRole("button", { name: "save history" }).click();
 
     const savedTab = page.getByRole("tab").filter({ hasText: "History" });
     await expect(savedTab).toBeVisible();
@@ -31,7 +31,7 @@ test("saved histories can be renamed, exported, imported, and replayed", async (
     await expect(page.getByRole("tab", { name: /Renamed history/ })).toBeVisible();
 
     await stubSaveDialog(electronApp, exportPath);
-    await page.getByLabel("export current history").click();
+    await page.getByRole("button", { name: "export current history" }).click();
     await expect
       .poll(async () => JSON.parse(await readFile(exportPath, "utf8")))
       .toMatchObject({
@@ -41,7 +41,7 @@ test("saved histories can be renamed, exported, imported, and replayed", async (
       });
 
     await stubOpenDialog(electronApp, [exportPath]);
-    await page.getByLabel("import history").click();
+    await page.getByRole("button", { name: "import history" }).click();
     await expect(page.getByRole("tab", { name: /Renamed history/ })).toHaveCount(2);
     await expect(page.getByRole("button", { name: "incoming" })).toBeVisible();
     await expect(page.getByRole("button", { name: "replay" })).toBeEnabled();
@@ -67,11 +67,11 @@ test("history controls disable empty exports and show invalid import errors", as
     await writeFile(invalidFilePath, "{not json", "utf8");
     await page.getByRole("link", { name: "mqtt dev tools" }).click();
 
-    await expect(page.getByLabel("save history")).toBeDisabled();
-    await expect(page.getByLabel("export current history")).toBeDisabled();
+    await expect(page.getByRole("button", { name: "save history" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "export current history" })).toBeDisabled();
 
     await stubOpenDialog(electronApp, [invalidFilePath]);
-    await page.getByLabel("import history").click();
+    await page.getByRole("button", { name: "import history" }).click();
     await expect(page.getByText("The selected file is not valid JSON.")).toBeVisible();
   } finally {
     await rm(invalidFilePath, { force: true });
