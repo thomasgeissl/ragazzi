@@ -1,52 +1,51 @@
 import BlockIcon from "@mui/icons-material/Block";
 import CheckIcon from "@mui/icons-material/Check";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import Collapse from "@mui/material/Collapse";
-import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
+import MenuItem from "@mui/material/MenuItem";
+import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { connect, getClient } from "../mqtt";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { connect, disconnect } from "../mqtt";
 import type { RootState } from "../store";
 
-import store from "../store";
-import { setBroker, setConnected, unsubscribeAll } from "../store/reducers/mqtt";
-
-setInterval(() => {
-  store.dispatch(setConnected(getClient().connected));
-}, 3000);
-
 export default function Broker() {
-  const [protocol, setProtocol] = useState("ws");
-  const [host, setHost] = useState("localhost");
-  const [port, setPort] = useState<string | number>(9001);
   const connected = useSelector((state: RootState) => state.mqtt.connected);
   const connectedProtocol = useSelector((state: RootState) => state.mqtt.protocol);
   const connectedHost = useSelector((state: RootState) => state.mqtt.host);
   const connectedPort = useSelector((state: RootState) => state.mqtt.port);
-  const subscriptions = useSelector((state: RootState) => state.mqtt.subscriptions);
-  const dispatch = useDispatch();
-  const [expanded, setExpanded] = React.useState(false);
+  const connectionEnabled = useSelector((state: RootState) => state.mqtt.connectionEnabled);
+  const [protocol, setProtocol] = useState(connectedProtocol);
+  const [host, setHost] = useState(connectedHost);
+  const [port, setPort] = useState<string | number>(connectedPort);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [expanded, setExpanded] = useState(!connectionEnabled);
 
-  function handleClick(nextProtocol: string, nextHost: string, nextPort: string | number) {
-    [...subscriptions.keys()].forEach((key) => {
-      getClient().unsubscribe(key);
-    });
-    dispatch(unsubscribeAll());
-    dispatch(setBroker(nextProtocol, nextHost, Number(nextPort)));
-    connect(nextProtocol, nextHost, nextPort);
-  }
+  useEffect(() => {
+    if (!connectionEnabled) {
+      setProtocol(connectedProtocol);
+      setHost(connectedHost);
+      setPort(connectedPort);
+    }
+  }, [connectedHost, connectedPort, connectedProtocol, connectionEnabled]);
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
+  const handleConnectionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      connect(protocol, host, port, username, password);
+      setExpanded(false);
+      return;
+    }
+
+    disconnect();
+    setExpanded(true);
   };
 
   function Status() {
@@ -58,6 +57,9 @@ export default function Broker() {
           </Box>
           <Typography component="h3" variant="h6" sx={{ color: "success.main" }}>
             connected to broker
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {connectedProtocol}://{connectedHost}:{connectedPort}
           </Typography>
         </Box>
       );
@@ -74,8 +76,12 @@ export default function Broker() {
   }
 
   return (
-    <Card sx={{ width: "100%" }}>
-      <CardActions disableSpacing sx={{ p: "16px", width: "100%" }}>
+    <Accordion
+      expanded={expanded}
+      onChange={(_, value) => setExpanded(value)}
+      sx={{ width: "100%" }}
+    >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box
           sx={{
             display: "flex",
@@ -88,69 +94,79 @@ export default function Broker() {
           <Box sx={{ flexGrow: 1 }}>
             <Status />
           </Box>
-          <Box onClick={handleExpandClick} sx={{ cursor: "pointer" }}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          <Box
+            onClick={(event) => event.stopPropagation()}
+            onFocus={(event) => event.stopPropagation()}
+          >
+            <Switch
+              checked={connectionEnabled}
+              onChange={handleConnectionChange}
+              slotProps={{ input: { "aria-label": "Broker connection" } }}
+            />
           </Box>
         </Box>
-      </CardActions>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <Divider />
-        <CardContent>
-          <Grid
-            container
-            spacing={3}
-            direction="row"
-            sx={{ justifyContent: "space-between", alignItems: "center" }}
-          >
-            <Grid container spacing={3} size={9}>
-              <Grid size={2}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="protocol"
-                  value={protocol}
-                  onChange={(event) => setProtocol(event.target.value)}
-                />
-              </Grid>
-              <Grid size={7}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="host"
-                  value={host}
-                  onChange={(event) => setHost(event.target.value)}
-                />
-              </Grid>
-              <Grid size={3}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="port"
-                  value={port}
-                  onChange={(event) => setPort(event.target.value)}
-                />
-              </Grid>
-            </Grid>
-            <Grid size={3}>
-              <Button
-                fullWidth
-                disabled={
-                  connected &&
-                  protocol === connectedProtocol &&
-                  host === connectedHost &&
-                  Number(port) === connectedPort
-                }
-                variant="contained"
-                color="primary"
-                type="button"
-                onClick={() => handleClick(protocol, host, port)}
-              >
-                connect
-              </Button>
-            </Grid>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Grid container spacing={3} direction="row">
+          <Grid size={2}>
+            <TextField
+              disabled={connectionEnabled}
+              fullWidth
+              size="small"
+              label="protocol"
+              select
+              value={protocol}
+              onChange={(event) => setProtocol(event.target.value)}
+            >
+              <MenuItem value="ws">ws</MenuItem>
+              <MenuItem value="wss">wss (TLS)</MenuItem>
+              <MenuItem value="mqtt">mqtt (TCP)</MenuItem>
+              <MenuItem value="mqtts">mqtts (TLS)</MenuItem>
+            </TextField>
           </Grid>
-        </CardContent>
-      </Collapse>
-    </Card>
+          <Grid size={4}>
+            <TextField
+              disabled={connectionEnabled}
+              fullWidth
+              size="small"
+              label="host"
+              value={host}
+              onChange={(event) => setHost(event.target.value)}
+            />
+          </Grid>
+          <Grid size={2}>
+            <TextField
+              disabled={connectionEnabled}
+              fullWidth
+              size="small"
+              label="port"
+              value={port}
+              onChange={(event) => setPort(event.target.value)}
+            />
+          </Grid>
+          <Grid size={2}>
+            <TextField
+              disabled={connectionEnabled}
+              fullWidth
+              size="small"
+              label="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+            />
+          </Grid>
+          <Grid size={2}>
+            <TextField
+              disabled={connectionEnabled}
+              fullWidth
+              size="small"
+              label="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </AccordionDetails>
+    </Accordion>
   );
 }

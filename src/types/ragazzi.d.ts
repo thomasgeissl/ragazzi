@@ -29,8 +29,42 @@ export interface RagazziBrokerApi {
   onSettings: (callback: (settings: BrokerSettings) => void) => () => void;
 }
 
+export type MqttProtocol = "mqtt" | "mqtts" | "ws" | "wss";
+
+export interface MqttConnectionOptions {
+  protocol: MqttProtocol;
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+}
+
+export interface MqttClientStatus {
+  connected: boolean;
+  protocol: MqttProtocol;
+  host: string;
+  port: number;
+  error?: string;
+}
+
+export interface MqttIncomingMessage {
+  topic: string;
+  payload: string;
+}
+
+export interface RagazziMqttApi {
+  connect: (options: MqttConnectionOptions) => Promise<MqttClientStatus>;
+  disconnect: () => Promise<MqttClientStatus>;
+  publish: (topic: string, payload: string) => Promise<void>;
+  subscribe: (topic: string) => Promise<void>;
+  unsubscribe: (topic: string) => Promise<void>;
+  onStatus: (callback: (status: MqttClientStatus) => void) => () => void;
+  onMessage: (callback: (message: MqttIncomingMessage) => void) => () => void;
+}
+
 export interface RagazziApi {
   broker: RagazziBrokerApi;
+  mqtt: RagazziMqttApi;
   openExternal: (url: string) => Promise<void>;
 }
 

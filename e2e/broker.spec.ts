@@ -26,3 +26,29 @@ test("on start the mqtt broker listens on ports 9001 and 1883 @smoke", async ({ 
   await expect(page.getByText(String(DEFAULT_WS_PORT), { exact: false })).toBeVisible();
   await expect(page.getByText(String(DEFAULT_TCP_PORT), { exact: false })).toBeVisible();
 });
+
+test("Dev Tools disconnect switch reveals editable broker settings", async ({ window: page }) => {
+  await page.getByRole("link", { name: "mqtt dev tools" }).click();
+
+  const brokerSwitch = page.getByLabel("Broker connection");
+  await expect(brokerSwitch).toBeChecked();
+  await expect(page.getByLabel("protocol")).toHaveCount(0);
+
+  await brokerSwitch.click();
+
+  await expect(brokerSwitch).not.toBeChecked();
+  await expect(page.getByLabel("protocol")).toBeVisible();
+  await expect(page.getByLabel("host")).toBeVisible();
+  await expect(page.getByLabel("port")).toBeVisible();
+  await expect(page.getByLabel("username")).toBeVisible();
+  await expect(page.getByLabel("password")).toBeVisible();
+  await expect(page.getByLabel("protocol")).toBeEditable();
+  await expect(page.getByLabel("host")).toBeEditable();
+  await expect(page.getByLabel("port")).toBeEditable();
+  await page.getByLabel("username").fill("public");
+  await page.getByLabel("password").fill("public");
+
+  await brokerSwitch.click();
+
+  await expect(brokerSwitch).toBeChecked();
+});

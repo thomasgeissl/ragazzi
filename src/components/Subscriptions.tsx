@@ -1,10 +1,10 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
-import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,7 +40,7 @@ export default function Subscriptions() {
               <ListItem key={index}>
                 <FormControlLabel
                   control={
-                    <Checkbox
+                    <Switch
                       checked={Boolean(subscriptions.get(key))}
                       onChange={() => toggleSubscription(key)()}
                       name={key}

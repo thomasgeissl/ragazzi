@@ -6,6 +6,7 @@ import reducer, {
   clearMessages,
   setBroker,
   setConnected,
+  setConnectionEnabled,
   subscribe,
   unsubscribe,
   unsubscribeAll,
@@ -18,6 +19,7 @@ describe("mqtt reducer", () => {
     expect(state.host).toBe("localhost");
     expect(state.port).toBe(9001);
     expect(state.protocol).toBe("ws");
+    expect(state.connectionEnabled).toBe(true);
     expect(state.subscriptions).toEqual(new Map());
   });
 
@@ -32,6 +34,10 @@ describe("mqtt reducer", () => {
 
   it("sets connected", () => {
     expect(reducer(undefined, setConnected(true)).connected).toBe(true);
+  });
+
+  it("tracks whether the broker connection is enabled", () => {
+    expect(reducer(undefined, setConnectionEnabled(false)).connectionEnabled).toBe(false);
   });
 
   it("prepends received messages and caps at 99", () => {

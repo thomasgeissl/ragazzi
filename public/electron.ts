@@ -21,7 +21,15 @@ import url from "url";
 import ws from "websocket-stream";
 import { normalizePort } from "../src/lib/ports";
 import { checkForUpdate, RELEASES_URL } from "../src/lib/updates";
-import type { BrokerSettings, ProjectConfig, ProjectView } from "../src/types/ragazzi";
+import type {
+  BrokerSettings,
+  MqttClientStatus,
+  MqttConnectionOptions,
+  MqttIncomingMessage,
+  MqttProtocol,
+  ProjectConfig,
+  ProjectView,
+} from "../src/types/ragazzi";
 
 const isDev = !app.isPackaged;
 const isE2E = process.env.RAGAZZI_E2E === "1";
@@ -34,6 +42,13 @@ const iconPath = [
 let mainWindow: BrowserWindow | null = null;
 let windows: BrowserWindow[] = [];
 let mqttClient: MqttClient | null = null;
+let devMqttClient: MqttClient | null = null;
+let devMqttStatus: MqttClientStatus = {
+  connected: false,
+  protocol: "ws",
+  host: "localhost",
+  port: 9001,
+};
 let brokerRunning = false;
 let brokerStarting = false;
 let tcpServer: net.Server | null = null;
@@ -100,6 +115,100 @@ const publishBrokerSettings = () => {
       }),
     );
   }
+};
+
+const publishDevMqttStatus = (status: MqttClientStatus) => {
+  devMqttStatus = status;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("mqtt:client:status", status);
+  }
+};
+
+const publishDevMqttMessage = (message: MqttIncomingMessage) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("mqtt:client:message", message);
+  }
+};
+
+const isMqttProtocol = (value: unknown): value is MqttProtocol =>
+  value === "mqtt" || value === "mqtts" || value === "ws" || value === "wss";
+
+const validateMqttConnectionOptions = (value: unknown): MqttConnectionOptions => {
+  if (!value || typeof value !== "object") {
+    throw new Error("Invalid MQTT connection settings");
+  }
+  const options = value as Partial<MqttConnectionOptions>;
+  if (
+    !isMqttProtocol(options.protocol) ||
+    typeof options.host !== "string" ||
+    !options.host.trim() ||
+    typeof options.port !== "number" ||
+    !Number.isInteger(options.port) ||
+    options.port < 1 ||
+    options.port > 65535 ||
+    (options.username !== undefined && typeof options.username !== "string") ||
+    (options.password !== undefined && typeof options.password !== "string")
+  ) {
+    throw new Error("Invalid MQTT connection settings");
+  }
+  return {
+    protocol: options.protocol,
+    host: options.host.trim(),
+    port: options.port,
+    username: options.username,
+    password: options.password,
+  };
+};
+
+const attachDevMqttHandlers = (client: MqttClient) => {
+  const isCurrentClient = () => client === devMqttClient;
+  client.on("connect", () => {
+    if (isCurrentClient()) {
+      publishDevMqttStatus({ ...devMqttStatus, connected: true, error: undefined });
+    }
+  });
+  client.on("close", () => {
+    if (isCurrentClient()) {
+      publishDevMqttStatus({ ...devMqttStatus, connected: false });
+    }
+  });
+  client.on("error", (error) => {
+    if (isCurrentClient()) {
+      publishDevMqttStatus({ ...devMqttStatus, connected: false, error: error.message });
+    }
+  });
+  client.on("message", (topic, payload) => {
+    if (isCurrentClient()) {
+      publishDevMqttMessage({ topic, payload: payload.toString("base64") });
+    }
+  });
+};
+
+const disconnectDevMqttClient = (): MqttClientStatus => {
+  const client = devMqttClient;
+  devMqttClient = null;
+  if (client) {
+    client.end(true);
+  }
+  publishDevMqttStatus({ ...devMqttStatus, connected: false, error: undefined });
+  return devMqttStatus;
+};
+
+const connectDevMqttClient = (connection: MqttConnectionOptions): MqttClientStatus => {
+  disconnectDevMqttClient();
+  devMqttStatus = {
+    connected: false,
+    protocol: connection.protocol,
+    host: connection.host,
+    port: connection.port,
+  };
+  devMqttClient = mqtt.connect(`${connection.protocol}://${connection.host}:${connection.port}`, {
+    username: connection.username,
+    password: connection.password,
+  });
+  attachDevMqttHandlers(devMqttClient);
+  publishDevMqttStatus(devMqttStatus);
+  return devMqttStatus;
 };
 
 const attachMqttHandlers = () => {
@@ -267,6 +376,36 @@ ipcMain.handle(
     return getBrokerSettings();
   },
 );
+
+const requireDevMqttClient = (): MqttClient => {
+  if (!devMqttClient) {
+    throw new Error("No MQTT connection is active");
+  }
+  return devMqttClient;
+};
+
+ipcMain.handle("mqtt:client:connect", (_event, options: unknown) =>
+  connectDevMqttClient(validateMqttConnectionOptions(options)),
+);
+ipcMain.handle("mqtt:client:disconnect", () => disconnectDevMqttClient());
+ipcMain.handle("mqtt:client:publish", (_event, topic: unknown, payload: unknown) => {
+  if (typeof topic !== "string" || !topic.trim() || typeof payload !== "string") {
+    throw new Error("Invalid MQTT publish request");
+  }
+  requireDevMqttClient().publish(topic, Buffer.from(payload, "base64"));
+});
+ipcMain.handle("mqtt:client:subscribe", (_event, topic: unknown) => {
+  if (typeof topic !== "string" || !topic.trim()) {
+    throw new Error("Invalid MQTT subscription topic");
+  }
+  requireDevMqttClient().subscribe(topic);
+});
+ipcMain.handle("mqtt:client:unsubscribe", (_event, topic: unknown) => {
+  if (typeof topic !== "string" || !topic.trim()) {
+    throw new Error("Invalid MQTT subscription topic");
+  }
+  requireDevMqttClient().unsubscribe(topic);
+});
 
 ipcMain.handle("shell:openExternal", async (_event, targetUrl: unknown) => {
   if (typeof targetUrl !== "string" || !/^https?:\/\//i.test(targetUrl)) {

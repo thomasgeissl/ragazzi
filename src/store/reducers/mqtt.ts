@@ -10,6 +10,7 @@ export const types = {
   UNSUBSCRIBE: "UNSUBSCRIBE",
   UNSUBSCRIBEALL: "UNSUBSCRIBEALL",
   SETBROKER: "SETBROKER",
+  SETCONNECTIONENABLED: "SETCONNECTIONENABLED",
   CLEARMESSAGES: "CLEARMESSAGES",
 } as const;
 
@@ -30,6 +31,7 @@ export interface MqttState {
   protocol: string;
   host: string;
   port: number;
+  connectionEnabled: boolean;
   subscriptions: Map<string, boolean>;
 }
 
@@ -40,6 +42,7 @@ const defaultState: MqttState = {
   protocol: "ws",
   host: "localhost",
   port: 9001,
+  connectionEnabled: true,
   subscriptions: new Map(),
 };
 
@@ -54,6 +57,13 @@ export const setBroker = (protocol: string, host: string, port: number) => ({
 
 export const setConnected = (value: boolean) => ({
   type: types.SETCONNECTED,
+  payload: {
+    value,
+  },
+});
+
+export const setConnectionEnabled = (value: boolean) => ({
+  type: types.SETCONNECTIONENABLED,
   payload: {
     value,
   },
@@ -117,6 +127,7 @@ export const clearMessages = () => ({
 export type MqttAction =
   | ReturnType<typeof setBroker>
   | ReturnType<typeof setConnected>
+  | ReturnType<typeof setConnectionEnabled>
   | ReturnType<typeof addReceivedMessage>
   | ReturnType<typeof addSentMessage>
   | ReturnType<typeof addSubscription>
@@ -140,6 +151,12 @@ export default (state: MqttState = defaultState, action: MqttAction | AnyAction)
       return {
         ...state,
         connected: (action as ReturnType<typeof setConnected>).payload.value,
+      };
+    }
+    case types.SETCONNECTIONENABLED: {
+      return {
+        ...state,
+        connectionEnabled: (action as ReturnType<typeof setConnectionEnabled>).payload.value,
       };
     }
     case types.ADDRECEIVEDMESSAGE: {
