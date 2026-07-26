@@ -39,12 +39,12 @@ test("Dev Tools disconnect switch reveals editable broker settings", async ({ wi
   await expect(brokerSwitch).not.toBeChecked();
   await expect(page.getByLabel("protocol")).toBeVisible();
   await expect(page.getByLabel("host")).toBeVisible();
-  await expect(page.getByLabel("port")).toBeVisible();
+  await expect(page.getByLabel("port", { exact: true })).toBeVisible();
   await expect(page.getByLabel("username")).toBeVisible();
   await expect(page.getByLabel("password")).toBeVisible();
   await expect(page.getByLabel("protocol")).toBeEditable();
   await expect(page.getByLabel("host")).toBeEditable();
-  await expect(page.getByLabel("port")).toBeEditable();
+  await expect(page.getByLabel("port", { exact: true })).toBeEditable();
   await page.getByLabel("username").fill("public");
   await page.getByLabel("password").fill("public");
 
